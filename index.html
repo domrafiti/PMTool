@@ -132,6 +132,7 @@
     <input type="search" id="searchInput" placeholder="Search…" style="width:160px">
     <div class="sep"></div>
     <button id="btnSync" title="Sync with JSONBin">Sync</button>
+    <button id="btnRefresh" title="Pull latest from bin (no overwrite confirmation)">↻ Refresh</button>
     <button id="btnTest" title="Test connection (read-only)">Test</button>
     <button id="btnSettings">Settings</button>
     <button id="btnExport" title="Export JSON">Export</button>
@@ -187,6 +188,7 @@ const DEFAULT_STATE = () => ({
     { id: 'col_priority', label: 'Priority', type: 'select',   group: 'Core',     width: 100, visible: true, options: ['Low','Medium','High','Critical'] },
     { id: 'col_start',    label: 'Start',    type: 'date',     group: 'Timeline', width: 120, visible: true },
     { id: 'col_end',      label: 'End',      type: 'date',     group: 'Timeline', width: 120, visible: true },
+    { id: 'col_deps',     label: 'Depends on', type: 'deps',   group: 'Timeline', width: 180, visible: true, locked: true },
     { id: 'col_progress', label: '% Done',   type: 'number',   group: 'Timeline', width: 90,  visible: true },
     { id: 'col_done',     label: 'Done?',    type: 'checkbox', group: 'Timeline', width: 70,  visible: true },
     { id: 'col_notes',    label: 'Notes',    type: 'text',     group: 'Details',  width: 220, visible: true }
@@ -332,8 +334,26 @@ function applySort(rows){
 }
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function isBlocked(row) {
+  const deps = row.values?.col_deps || [];
+  if (!deps.length) return false;
+  return deps.some(id => {
+    const pred = state.rows.find(r => r.id === id);
+    return pred && pred.values?.col_status !== 'Done';
+  });
+}
+function migrateState() {
+  // Ensure col_deps column exists for users on data from before this column was added
+  if (!state.columns.find(c => c.id === 'col_deps')) {
+    const endIdx = state.columns.findIndex(c => c.id === 'col_end');
+    const newCol = { id: 'col_deps', label: 'Depends on', type: 'deps', group: 'Timeline', width: 180, visible: true, locked: true };
+    if (endIdx >= 0) state.columns.splice(endIdx + 1, 0, newCol);
+    else state.columns.push(newCol);
+  }
+}
 
 function render() {
+  migrateState();
   if (state.ui.view === 'table') renderTable(); else renderGantt();
   document.getElementById('btnViewTable').classList.toggle('active', state.ui.view === 'table');
   document.getElementById('btnViewGantt').classList.toggle('active', state.ui.view === 'gantt');
@@ -422,9 +442,10 @@ function renderCell(row, col) {
     inp.addEventListener('change', () => { row.values.col_name = inp.value; saveLocal(); });
     wrap.appendChild(inp);
     const actions = document.createElement('div'); actions.className = 'row-actions';
-    const a1 = document.createElement('button'); a1.textContent = '+ child'; a1.addEventListener('click', () => addRow(row.id));
-    const a2 = document.createElement('button'); a2.textContent = '🗑'; a2.className = 'danger'; a2.addEventListener('click', () => deleteRow(row.id));
-    actions.appendChild(a1); actions.appendChild(a2); wrap.appendChild(actions);
+    const a1 = document.createElement('button'); a1.textContent = '+ child'; a1.title = 'Add child row'; a1.addEventListener('click', () => addRow(row.id));
+    const aDup = document.createElement('button'); aDup.textContent = '⎘'; aDup.title = 'Duplicate this row and its descendants'; aDup.addEventListener('click', () => duplicateRow(row.id));
+    const a2 = document.createElement('button'); a2.textContent = '🗑'; a2.className = 'danger'; a2.title = 'Delete row + descendants'; a2.addEventListener('click', () => deleteRow(row.id));
+    actions.appendChild(a1); actions.appendChild(aDup); actions.appendChild(a2); wrap.appendChild(actions);
     return wrap;
   }
   if (col.type === 'select') {
@@ -461,6 +482,23 @@ function renderCell(row, col) {
     inp.addEventListener('change', () => { row.values[col.id] = inp.value === '' ? '' : +inp.value; saveLocal(); });
     wrap.appendChild(inp); return wrap;
   }
+  if (col.type === 'deps') {
+    const wrap = document.createElement('div'); wrap.className = 'cell';
+    const deps = row.values?.[col.id] || [];
+    const btn = document.createElement('button');
+    btn.style.flex = '1'; btn.style.justifyContent = 'flex-start'; btn.style.background = 'transparent'; btn.style.border = 'none'; btn.style.textAlign = 'left'; btn.style.padding = '0 4px'; btn.style.overflow = 'hidden'; btn.style.textOverflow = 'ellipsis'; btn.style.whiteSpace = 'nowrap';
+    if (deps.length === 0) {
+      btn.textContent = '+ add';
+      btn.style.color = 'var(--text-muted)';
+    } else {
+      const names = deps.map(id => state.rows.find(r => r.id === id)?.values?.col_name || '(deleted)').join(', ');
+      const blocked = isBlocked(row);
+      btn.textContent = (blocked ? '⛔ ' : '') + (deps.length === 1 ? names : deps.length + ': ' + names);
+      btn.title = (blocked ? '⛔ Blocked — predecessor(s) not Done\n\n' : '') + 'Depends on:\n' + names;
+    }
+    btn.addEventListener('click', () => openDepsPicker(row, col));
+    wrap.appendChild(btn); return wrap;
+  }
   const wrap = document.createElement('div'); wrap.className = 'cell';
   const inp = document.createElement('input'); inp.type = 'text'; inp.value = row.values?.[col.id] ?? '';
   inp.addEventListener('change', () => { row.values[col.id] = inp.value; saveLocal(); });
@@ -470,6 +508,26 @@ function cycleSort(c){const s=state.ui.sortBy;if(!s||s.columnId!==c)state.ui.sor
 function toggleGroup(n){const i=state.collapsedGroups.indexOf(n);if(i===-1)state.collapsedGroups.push(n);else state.collapsedGroups.splice(i,1);render();}
 function addRow(p){state.rows.push({id:uid(),parentId:p||null,expanded:true,values:{col_name:''}});if(p){const x=state.rows.find(r=>r.id===p);if(x)x.expanded=true;}render();}
 function deleteRow(id){if(!confirm('Delete this row and all its children?'))return;const rm=new Set([id,...descendantsOf(id).map(r=>r.id)]);state.rows=state.rows.filter(r=>!rm.has(r.id));render();}
+function duplicateRow(rowId) {
+  const source = state.rows.find(r => r.id === rowId);
+  if (!source) return;
+  const desc = descendantsOf(rowId);
+  const subtree = [source, ...desc];
+  const idMap = new Map();
+  for (const r of subtree) idMap.set(r.id, uid());
+  const newRows = subtree.map(r => ({
+    id: idMap.get(r.id),
+    parentId: r.id === source.id ? source.parentId : idMap.get(r.parentId),
+    expanded: r.expanded,
+    values: { ...r.values, ...(r.id === source.id ? { col_name: (r.values.col_name || 'Untitled') + ' (copy)' } : {}) }
+  }));
+  // Insert immediately after the source's subtree so the copy appears right below
+  const subtreeIds = new Set(subtree.map(r => r.id));
+  let lastIdx = -1;
+  for (let i = 0; i < state.rows.length; i++) if (subtreeIds.has(state.rows[i].id)) lastIdx = i;
+  state.rows.splice(lastIdx + 1, 0, ...newRows);
+  render();
+}
 function attachColumnResize(grip, col) {
   let sx, sw;
   grip.addEventListener('mousedown', (e) => { e.preventDefault(); sx = e.clientX; sw = col.width || 120;
@@ -501,7 +559,7 @@ function showColumnMenu(anchor, col) {
     else if (a === 'sort-desc') state.ui.sortBy = { columnId: col.id, direction: 'desc' };
     else if (a === 'clear-sort') state.ui.sortBy = null;
     else if (a === 'rename') { const v = prompt('New name:', col.label); if (v != null && v.trim()) col.label = v.trim(); }
-    else if (a === 'type') { const v = prompt('Type (text, number, date, select, checkbox):', col.type); if (v && ['text','number','date','select','checkbox'].includes(v.trim())) col.type = v.trim(); }
+    else if (a === 'type') { const v = prompt('Type (text, number, date, select, checkbox, deps):', col.type); if (v && ['text','number','date','select','checkbox','deps'].includes(v.trim())) col.type = v.trim(); }
     else if (a === 'options') { const v = prompt('Options (comma-separated):', (col.options || []).join(', ')); if (v != null) col.options = v.split(',').map(s => s.trim()).filter(Boolean); }
     else if (a === 'hide') col.visible = false;
     else if (a === 'delete') { if (confirm(`Delete column "${col.label}" and all its data?`)) { state.columns = state.columns.filter(c => c.id !== col.id); for (const r of state.rows) delete r.values[col.id]; } }
@@ -528,7 +586,7 @@ function openManageColumns() {
       li.innerHTML = `<span class="handle" title="Drag to reorder">⋮⋮</span>
         <input type="checkbox" ${col.visible !== false ? 'checked' : ''} data-act="vis">
         <input type="text" class="col-name" value="${escapeHtml(col.label)}" data-act="label">
-        <select data-act="type" class="col-type">${['text','number','date','select','checkbox'].map(t => `<option value="${t}" ${col.type===t?'selected':''}>${t}</option>`).join('')}</select>
+        <select data-act="type" class="col-type">${['text','number','date','select','checkbox','deps'].map(t => `<option value="${t}" ${col.type===t?'selected':''}>${t}</option>`).join('')}</select>
         <input type="text" placeholder="Group" value="${escapeHtml(col.group||'')}" data-act="group" style="width:90px">
         ${col.type === 'select' ? `<input type="text" placeholder="opt1, opt2, …" value="${escapeHtml((col.options||[]).join(', '))}" data-act="opts" style="width:150px">` : ''}
         ${col.locked ? '<span style="color:var(--text-muted);font-size:11px">locked</span>' : '<button data-act="del" class="danger icon">🗑</button>'}`;
@@ -582,6 +640,54 @@ function openFilter() {
   const back = openModal('Filter', body, [clr, ok]);
   ok.addEventListener('click', () => { back.remove(); render(); });
 }
+function openDepsPicker(row, col) {
+  const body = document.createElement('div');
+  body.innerHTML = `<p style="margin-top:0;color:var(--text-muted)">Select tasks that must complete before <strong>${escapeHtml(row.values?.col_name || 'this row')}</strong> can start. Status of each row is shown on the right.</p>`;
+  const search = document.createElement('input');
+  search.type = 'search'; search.placeholder = 'Search rows…'; search.style.width = '100%'; search.style.marginBottom = '8px';
+  body.appendChild(search);
+  const list = document.createElement('div');
+  list.style.maxHeight = '320px'; list.style.overflow = 'auto'; list.style.border = '1px solid var(--border)'; list.style.borderRadius = '6px';
+  body.appendChild(list);
+  const currentDeps = new Set(row.values?.[col.id] || []);
+  // Exclude self + descendants to prevent direct cycles
+  const excl = new Set([row.id, ...descendantsOf(row.id).map(r => r.id)]);
+  function renderList(q) {
+    list.innerHTML = '';
+    const lq = (q || '').toLowerCase();
+    let any = false;
+    for (const r of getOrderedRows()) {
+      if (excl.has(r.id)) continue;
+      const name = r.values?.col_name || 'Untitled';
+      if (lq && !name.toLowerCase().includes(lq)) continue;
+      any = true;
+      const item = document.createElement('label');
+      item.style.display = 'flex'; item.style.alignItems = 'center'; item.style.gap = '8px'; item.style.padding = '5px 8px'; item.style.cursor = 'pointer'; item.style.borderBottom = '1px solid var(--border)';
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = currentDeps.has(r.id);
+      cb.addEventListener('change', () => { if (cb.checked) currentDeps.add(r.id); else currentDeps.delete(r.id); });
+      item.appendChild(cb);
+      const nm = document.createElement('span');
+      nm.style.paddingLeft = (depthOf(r) * 14) + 'px';
+      nm.textContent = name;
+      const meta = document.createElement('span');
+      meta.style.marginLeft = 'auto'; meta.style.color = 'var(--text-muted)'; meta.style.fontSize = '11px';
+      meta.textContent = r.values?.col_status || '—';
+      item.appendChild(nm); item.appendChild(meta);
+      list.appendChild(item);
+    }
+    if (!any) { list.innerHTML = '<div style="padding:14px;color:var(--text-muted);text-align:center">No rows match (rows that would create a cycle are hidden).</div>'; }
+  }
+  renderList('');
+  search.addEventListener('input', () => renderList(search.value));
+  const clr = document.createElement('button'); clr.textContent = 'Clear all';
+  clr.addEventListener('click', () => { currentDeps.clear(); row.values[col.id] = []; saveLocal(); render(); back.remove(); });
+  const cancel = document.createElement('button'); cancel.textContent = 'Cancel';
+  const save = document.createElement('button'); save.className = 'primary'; save.textContent = 'Save';
+  const back = openModal('Dependencies', body, [clr, cancel, save]);
+  cancel.addEventListener('click', () => back.remove());
+  save.addEventListener('click', () => { row.values[col.id] = Array.from(currentDeps); saveLocal(); render(); back.remove(); });
+}
+
 function openSettings() {
   const body = document.createElement('div');
   body.innerHTML = `
@@ -708,6 +814,32 @@ function updateStatus() {
   setStatus('Setup needed — click Settings');
 }
 
+async function refreshFromBin() {
+  setStatus('Refreshing…');
+  // Admin path: pull via master key, overwrites local (no confirm — explicit "Refresh" intent)
+  if (state.settings.jsonbinApiKey && state.settings.jsonbinBinId) {
+    try {
+      const result = await jsonbinApi('GET');
+      const remote = result.record;
+      if (!remote || !remote.columns || !remote.rows) throw new Error('Bin content is not a valid PM Tool snapshot.');
+      const localUi = { ...state.ui };
+      const localSettings = { ...state.settings };
+      state = remote;
+      state.ui = localUi;
+      state.settings = localSettings;
+      saveLocal(); render();
+      setStatus('Refreshed from bin · ' + new Date().toLocaleTimeString(), 'ok');
+    } catch (e) {
+      setStatus('Refresh failed: ' + e.message, 'err');
+      alert('Refresh FAILED.\n\n' + e.message);
+    }
+    return;
+  }
+  // Viewer path: re-fetch via embedded read key
+  if (EMBEDDED_BIN_ID && EMBEDDED_READ_KEY) { return autoLoadFromEmbeddedBin(); }
+  alert('Nothing to refresh from — configure JSONBin in Settings, or set EMBEDDED_BIN_ID + EMBEDDED_READ_KEY in the HTML for viewer mode.');
+}
+
 async function autoLoadFromEmbeddedBin() {
   if (!EMBEDDED_BIN_ID || !EMBEDDED_READ_KEY) return;
   // Skip auto-load if user has their own master key — admins manage sync direction manually
@@ -806,6 +938,64 @@ function renderGantt() {
     }
     rowsEl.appendChild(rowEl);
   }
+
+  // ---- Dependency arrows (SVG overlay) ----
+  const rowIndexMap = new Map();
+  rows.forEach((r, i) => rowIndexMap.set(r.id, i));
+  const arrows = [];
+  for (let depIdx = 0; depIdx < rows.length; depIdx++) {
+    const dep = rows[depIdx];
+    const deps = dep.values?.col_deps || [];
+    if (!deps.length) continue;
+    const depStart = dep.values?.col_start;
+    if (!depStart) continue;
+    for (const predId of deps) {
+      const predIdx = rowIndexMap.get(predId);
+      if (predIdx === undefined) continue; // predecessor not in current visible set
+      const pred = state.rows.find(r => r.id === predId);
+      if (!pred) continue;
+      const predEnd = pred.values?.col_end;
+      if (!predEnd) continue;
+      const predEndD = new Date(predEnd); predEndD.setHours(0,0,0,0);
+      const depStartD = new Date(depStart); depStartD.setHours(0,0,0,0);
+      const predEndOffset = Math.round((predEndD - minD) / 86400000);
+      const x1 = (predEndOffset + 1) * dayWidth - 2;
+      const y1 = predIdx * 32 + 16;
+      const depStartOffset = Math.round((depStartD - minD) / 86400000);
+      const x2 = depStartOffset * dayWidth;
+      const y2 = depIdx * 32 + 16;
+      const isConflict = depStartD < predEndD;
+      arrows.push({ x1, y1, x2, y2, isConflict, predName: pred.values?.col_name || '', depName: dep.values?.col_name || '' });
+    }
+  }
+  if (arrows.length) {
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNs, 'svg');
+    svg.style.position = 'absolute'; svg.style.top = '0'; svg.style.left = '0';
+    svg.setAttribute('width', canvasWidth);
+    svg.setAttribute('height', rows.length * 32);
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '3';
+    const defs = document.createElementNS(svgNs, 'defs');
+    defs.innerHTML = '<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/></marker>';
+    svg.appendChild(defs);
+    for (const a of arrows) {
+      const path = document.createElementNS(svgNs, 'path');
+      const elbow = Math.max(a.x1 + 8, a.x2 - 8);
+      path.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + elbow + ' ' + a.y1 + ' L ' + elbow + ' ' + a.y2 + ' L ' + (a.x2 - 4) + ' ' + a.y2);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', a.isConflict ? '#dc2626' : '#6b7280');
+      path.setAttribute('stroke-width', '1.5');
+      path.setAttribute('marker-end', a.isConflict ? 'url(#ah-red)' : 'url(#ah)');
+      path.style.pointerEvents = 'visibleStroke';
+      const title = document.createElementNS(svgNs, 'title');
+      title.textContent = a.predName + ' → ' + a.depName + (a.isConflict ? '\n⚠️ CONFLICT: dependent starts before predecessor ends' : '');
+      path.appendChild(title);
+      svg.appendChild(path);
+    }
+    rowsEl.appendChild(svg);
+  }
+
   const todayD = new Date(); todayD.setHours(0,0,0,0);
   if (todayD >= minD && todayD <= maxD) {
     const offset = Math.round((todayD-minD)/86400000);
@@ -821,6 +1011,7 @@ document.getElementById('btnManageCols').addEventListener('click', openManageCol
 document.getElementById('btnFilter').addEventListener('click', openFilter);
 document.getElementById('btnSettings').addEventListener('click', openSettings);
 document.getElementById('btnSync').addEventListener('click', syncNow);
+document.getElementById('btnRefresh').addEventListener('click', refreshFromBin);
 document.getElementById('btnTest').addEventListener('click', testConnection);
 document.getElementById('btnExport').addEventListener('click', exportJson);
 document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
