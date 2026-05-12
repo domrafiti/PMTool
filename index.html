@@ -6,23 +6,13 @@
 <title>PM Tool</title>
 <style>
   :root {
-    --bg: #ffffff;
-    --bg-alt: #f7f8fa;
-    --bg-hover: #eef2f7;
-    --border: #dfe3ea;
-    --border-strong: #c2c9d3;
-    --text: #1f2328;
-    --text-muted: #5e6573;
-    --accent: #2563eb;
-    --accent-soft: #dbeafe;
-    --danger: #dc2626;
-    --warn: #d97706;
-    --ok: #059669;
-    --bar: #4f46e5;
-    --bar-soft: #c7d2fe;
-    --row-height: 32px;
-    --header-height: 36px;
-    --day-width: 28px;
+    --bg: #ffffff; --bg-alt: #f7f8fa; --bg-hover: #eef2f7;
+    --border: #dfe3ea; --border-strong: #c2c9d3;
+    --text: #1f2328; --text-muted: #5e6573;
+    --accent: #2563eb; --accent-soft: #dbeafe;
+    --danger: #dc2626; --warn: #d97706; --ok: #059669;
+    --bar: #4f46e5; --bar-soft: #c7d2fe;
+    --row-height: 32px; --header-height: 36px; --day-width: 28px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); font-size: 13px; background: var(--bg); }
@@ -45,8 +35,6 @@
   .view-switch button { border: none; border-radius: 0; padding: 5px 12px; background: var(--bg); }
   .view-switch button.active { background: var(--accent); color: #fff; }
   .main { flex: 1; overflow: hidden; position: relative; }
-
-  /* TABLE VIEW */
   .table-wrap { height: 100%; overflow: auto; }
   table.grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
   table.grid th, table.grid td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0; height: var(--row-height); vertical-align: middle; background: var(--bg); position: relative; }
@@ -61,12 +49,9 @@
   table.grid thead th.group-header { text-align: center; background: var(--bg); border-bottom: 1px solid var(--border-strong); font-weight: 600; }
   table.grid thead th.group-header .th-inner { justify-content: center; cursor: pointer; }
   table.grid tbody td .cell { padding: 0 8px; height: 100%; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  table.grid tbody td .cell input,
-  table.grid tbody td .cell select { width: 100%; height: 100%; border: none; background: transparent; padding: 0; }
-  table.grid tbody td .cell input:focus,
-  table.grid tbody td .cell select:focus { background: var(--bg); }
+  table.grid tbody td .cell input, table.grid tbody td .cell select { width: 100%; height: 100%; border: none; background: transparent; padding: 0; }
+  table.grid tbody td .cell input:focus, table.grid tbody td .cell select:focus { background: var(--bg); }
   table.grid tbody tr:hover td { background: var(--bg-hover); }
-  table.grid tbody tr.selected td { background: var(--accent-soft); }
   .name-cell { display: flex; align-items: center; gap: 2px; padding: 0 4px 0 0; height: 100%; }
   .name-cell .indent { flex-shrink: 0; }
   .name-cell .chevron { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); border-radius: 3px; flex-shrink: 0; }
@@ -77,15 +62,8 @@
   .row-actions { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: none; gap: 2px; }
   tr:hover .row-actions { display: flex; }
   .row-actions button { padding: 2px 5px; font-size: 11px; line-height: 1; background: var(--bg); }
-  .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
-  .pill.notstarted { background: #e5e7eb; color: #374151; }
-  .pill.inprogress { background: #dbeafe; color: #1e40af; }
-  .pill.done { background: #d1fae5; color: #065f46; }
-  .pill.blocked { background: #fee2e2; color: #991b1b; }
   .progress-bar { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
   .progress-bar > div { height: 100%; background: var(--ok); }
-
-  /* GANTT VIEW */
   .gantt-wrap { height: 100%; display: grid; grid-template-columns: 320px 1fr; overflow: hidden; }
   .gantt-left, .gantt-right { overflow: auto; height: 100%; }
   .gantt-left { border-right: 1px solid var(--border); }
@@ -102,13 +80,10 @@
   .gantt-day-cell.today { background: var(--accent-soft); font-weight: 700; color: var(--accent); }
   .gantt-rows { position: relative; }
   .gantt-row { height: var(--row-height); position: relative; border-bottom: 1px solid var(--border); }
-  .gantt-row.weekend-stripe::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(to right, transparent 0 calc(var(--day-width) * 5), var(--bg-alt) calc(var(--day-width) * 5) calc(var(--day-width) * 7)); pointer-events: none; }
   .gantt-bar { position: absolute; top: 5px; height: calc(var(--row-height) - 10px); background: var(--bar); border-radius: 4px; color: #fff; font-size: 11px; padding: 0 6px; line-height: calc(var(--row-height) - 10px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 1px 2px rgba(0,0,0,0.15); cursor: pointer; }
   .gantt-bar.parent { background: var(--text); height: 8px; top: 12px; border-radius: 2px; }
   .gantt-bar .gantt-progress { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,0.3); border-radius: 4px 0 0 4px; }
   .gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); pointer-events: none; z-index: 1; }
-
-  /* MODALS / DROPDOWNS */
   .menu { position: absolute; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 1000; min-width: 200px; padding: 4px; }
   .menu button { display: block; width: 100%; text-align: left; background: transparent; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
   .menu button:hover { background: var(--bg-hover); }
@@ -116,7 +91,7 @@
   .menu .menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
   .menu .menu-label { padding: 6px 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
   .modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.4); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-  .modal { background: var(--bg); border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 500px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+  .modal { background: var(--bg); border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); width: 520px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
   .modal h2 { margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 15px; }
   .modal .modal-body { padding: 14px 16px; overflow: auto; }
   .modal .modal-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; background: var(--bg-alt); }
@@ -129,13 +104,8 @@
   .col-list .handle { cursor: grab; color: var(--text-muted); user-select: none; }
   .col-list .col-name { flex: 1; }
   .col-list .col-type { color: var(--text-muted); font-size: 12px; min-width: 70px; }
-  .filter-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--accent-soft); color: var(--accent); border-radius: 10px; font-size: 11px; margin-right: 4px; }
-  .filter-chip button { background: transparent; border: none; padding: 0; color: var(--accent); cursor: pointer; }
   .empty-state { padding: 40px 20px; text-align: center; color: var(--text-muted); }
   .empty-state h3 { margin: 0 0 8px; }
-
-  /* HIDDEN columns/groups marker */
-  .collapsed-group { display: none !important; }
   .group-collapsed-cell { width: 24px; min-width: 24px; max-width: 24px; background: var(--bg-alt) !important; text-align: center; cursor: pointer; }
   .group-collapsed-cell:hover { background: var(--bg-hover) !important; }
 </style>
@@ -153,27 +123,21 @@
     <button id="btnFilter">Filter <span id="filterCount"></span></button>
     <input type="search" id="searchInput" placeholder="Search…" style="width:160px">
     <div class="sep"></div>
-    <button id="btnSync" title="Sync with Google Sheet">Sync</button>
-    <button id="btnTest" title="Test connection (GET only, no changes)">Test</button>
+    <button id="btnSync" title="Sync with JSONBin">Sync</button>
+    <button id="btnTest" title="Test connection (read-only)">Test</button>
     <button id="btnSettings">Settings</button>
     <button id="btnExport" title="Export JSON">Export</button>
     <button id="btnImport" title="Import JSON">Import</button>
     <div class="grow"></div>
-    <div class="status" id="status">Not connected</div>
+    <div class="status" id="status">Loading…</div>
   </div>
   <div class="main" id="main">
     <div class="table-wrap" id="tableWrap">
-      <table class="grid" id="grid">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
+      <table class="grid" id="grid"><thead></thead><tbody></tbody></table>
     </div>
     <div class="gantt-wrap" id="ganttWrap" style="display:none">
       <div class="gantt-left">
-        <table>
-          <thead><tr><th>Task</th></tr></thead>
-          <tbody id="ganttLeftBody"></tbody>
-        </table>
+        <table><thead><tr><th>Task</th></tr></thead><tbody id="ganttLeftBody"></tbody></table>
       </div>
       <div class="gantt-right" id="ganttRight">
         <div class="gantt-canvas" id="ganttCanvas">
@@ -184,26 +148,11 @@
     </div>
   </div>
 </div>
-
 <input type="file" id="fileImport" accept="application/json" style="display:none">
-
 <script>
-/* ============================================================
-   PM Tool — single-file project management for Google Sites
-   ============================================================
-   Data model:
-     state = {
-       version, columns[], rows[], collapsedGroups[], hiddenColumns[],
-       ui: { view, sortBy, search, filters }, settings: { appsScriptUrl }
-     }
-   Rows: flat array. Hierarchy via parentId. Each row: { id, parentId, expanded, values{} }
-   Columns: { id, label, type, group, width, options?[], visible }
-   ============================================================ */
-
 const uid = () => 'i_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
-
 const DEFAULT_STATE = () => ({
-  version: 1,
+  version: 3,
   columns: [
     { id: 'col_name',     label: 'Name',     type: 'text',     group: 'Core',     width: 280, visible: true, locked: true },
     { id: 'col_status',   label: 'Status',   type: 'select',   group: 'Core',     width: 130, visible: true, options: ['Not Started','In Progress','Blocked','Done'] },
@@ -215,506 +164,221 @@ const DEFAULT_STATE = () => ({
     { id: 'col_done',     label: 'Done?',    type: 'checkbox', group: 'Timeline', width: 70,  visible: true },
     { id: 'col_notes',    label: 'Notes',    type: 'text',     group: 'Details',  width: 220, visible: true }
   ],
-  rows: [
-    sampleRow(null, true,  { col_name: 'Sample Initiative', col_status: 'In Progress', col_owner: 'You', col_priority: 'High', col_start: today(0), col_end: today(30), col_progress: 25 }),
-  ],
+  rows: [],
   collapsedGroups: [],
   ui: { view: 'table', sortBy: null, search: '', filters: {} },
-  settings: { appsScriptUrl: '' }
+  settings: { jsonbinApiKey: '', jsonbinBinId: '' }
 });
+function sampleRow(p,e,v){return{id:uid(),parentId:p,expanded:e!==false,values:v||{}};}
+function today(o){const d=new Date();d.setDate(d.getDate()+(o||0));return d.toISOString().slice(0,10);}
+const LS_KEY = 'pmtool.state.v3';
+let state = (function(){
+  try { const v = localStorage.getItem(LS_KEY); if (v) return JSON.parse(v); } catch(e){}
+  const s = DEFAULT_STATE();
+  const init = sampleRow(null, true, { col_name: 'Sample Initiative', col_status: 'In Progress', col_owner: 'You', col_priority: 'High', col_start: today(0), col_end: today(30), col_progress: 25 });
+  s.rows.push(init);
+  const p1 = sampleRow(init.id, true, { col_name: 'Phase 1: Planning', col_status: 'Done', col_owner: 'You', col_priority: 'High', col_start: today(0), col_end: today(7), col_progress: 100, col_done: true });
+  const p2 = sampleRow(init.id, true, { col_name: 'Phase 2: Build', col_status: 'In Progress', col_owner: 'You', col_priority: 'High', col_start: today(8), col_end: today(21), col_progress: 40 });
+  s.rows.push(p1, p2);
+  s.rows.push(sampleRow(p2.id, true, { col_name: 'Design schema', col_status: 'Done', col_owner: 'You', col_start: today(8), col_end: today(11), col_progress: 100, col_done: true }));
+  s.rows.push(sampleRow(p2.id, true, { col_name: 'Implement API', col_status: 'In Progress', col_owner: 'You', col_start: today(12), col_end: today(18), col_progress: 50 }));
+  return s;
+})();
+function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 
-function sampleRow(parentId, expanded, values) {
-  return { id: uid(), parentId, expanded: expanded !== false, values: values || {} };
-}
-function today(offsetDays) {
-  const d = new Date(); d.setDate(d.getDate() + (offsetDays || 0));
-  return d.toISOString().slice(0,10);
-}
-
-const LS_KEY = 'pmtool.state.v1';
-
-let state = loadLocal() || DEFAULT_STATE();
-ensureChildSample();
-
-function ensureChildSample() {
-  // Add one child to the sample initiative so users see hierarchy on first load.
-  if (state.rows.length === 1 && state.rows[0].values.col_name === 'Sample Initiative') {
-    const p = state.rows[0];
-    state.rows.push(
-      sampleRow(p.id, true, { col_name: 'Phase 1: Planning', col_status: 'Done', col_owner: 'You', col_priority: 'High', col_start: today(0), col_end: today(7), col_progress: 100, col_done: true }),
-      sampleRow(p.id, true, { col_name: 'Phase 2: Build',   col_status: 'In Progress', col_owner: 'You', col_priority: 'High', col_start: today(8), col_end: today(21), col_progress: 40 })
-    );
-    const phase2 = state.rows[state.rows.length - 1];
-    state.rows.push(
-      sampleRow(phase2.id, true, { col_name: 'Design schema', col_status: 'Done', col_owner: 'You', col_start: today(8), col_end: today(11), col_progress: 100, col_done: true }),
-      sampleRow(phase2.id, true, { col_name: 'Implement API', col_status: 'In Progress', col_owner: 'You', col_start: today(12), col_end: today(18), col_progress: 50 })
-    );
+function depthOf(r){let d=0,c=r;while(c&&c.parentId){c=state.rows.find(x=>x.id===c.parentId);d++;if(d>100)break;}return d;}
+function descendantsOf(id){const o=[],s=[id];while(s.length){const c=s.pop();for(const r of state.rows)if(r.parentId===c){o.push(r);s.push(r.id);}}return o;}
+function getOrderedRows(){const o=[];(function w(p){for(const r of state.rows)if(r.parentId===p){o.push(r);w(r.id);}})(null);return o;}
+function getVisibleRows(){return getOrderedRows().filter(r=>{let c=r;while(c.parentId){const p=state.rows.find(x=>x.id===c.parentId);if(!p)break;if(p.expanded===false)return false;c=p;}return true;});}
+function applySearchAndFilter(rows){
+  const q=(state.ui.search||'').trim().toLowerCase();
+  const filters=state.ui.filters||{};
+  const fe=Object.entries(filters).filter(([_,v])=>v!==''&&v!=null);
+  if(!q&&fe.length===0)return rows;
+  const m=new Set();
+  for(const r of rows){
+    let pass=true;
+    if(q){const hay=Object.values(r.values||{}).map(v=>String(v??'').toLowerCase()).join(' ');if(!hay.includes(q))pass=false;}
+    if(pass)for(const[c,v]of fe){if(String(r.values?.[c]??'').toLowerCase()!==String(v).toLowerCase()){pass=false;break;}}
+    if(pass){m.add(r.id);let c=r;while(c.parentId){m.add(c.parentId);c=state.rows.find(x=>x.id===c.parentId);if(!c)break;}}
   }
+  return rows.filter(r=>m.has(r.id));
 }
-
-function loadLocal() {
-  try { const v = localStorage.getItem(LS_KEY); return v ? JSON.parse(v) : null; }
-  catch (e) { console.warn('localStorage read failed', e); return null; }
-}
-function saveLocal() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-  catch (e) { console.warn('localStorage write failed', e); }
-}
-
-/* ---------- Hierarchy helpers ---------- */
-function childrenOf(parentId) { return state.rows.filter(r => r.parentId === parentId); }
-function depthOf(row) {
-  let d = 0, cur = row;
-  while (cur && cur.parentId) {
-    cur = state.rows.find(r => r.id === cur.parentId);
-    d++;
-    if (d > 100) break;
-  }
-  return d;
-}
-function descendantsOf(rowId) {
-  const out = [];
-  const stack = [rowId];
-  while (stack.length) {
-    const cur = stack.pop();
-    for (const r of state.rows) if (r.parentId === cur) { out.push(r); stack.push(r.id); }
-  }
-  return out;
-}
-function getOrderedRows() {
-  // Depth-first traversal, respecting current row order under each parent.
-  const out = [];
-  function walk(parentId) {
-    for (const r of state.rows) if (r.parentId === parentId) { out.push(r); walk(r.id); }
-  }
-  walk(null);
-  return out;
-}
-function getVisibleRows() {
-  const all = getOrderedRows();
-  const collapsedAncestors = new Set();
-  return all.filter(r => {
-    // Skip if any ancestor is collapsed
-    let cur = r;
-    while (cur.parentId) {
-      const parent = state.rows.find(x => x.id === cur.parentId);
-      if (!parent) break;
-      if (parent.expanded === false) return false;
-      cur = parent;
-    }
-    return true;
-  });
-}
-
-/* ---------- Filter / sort / search ---------- */
-function applySearchAndFilter(rows) {
-  const q = (state.ui.search || '').trim().toLowerCase();
-  const filters = state.ui.filters || {};
-  const filterEntries = Object.entries(filters).filter(([_, v]) => v !== '' && v != null);
-
-  if (!q && filterEntries.length === 0) return rows;
-
-  // A row passes if it matches; we also keep ancestors of matched rows so structure is visible.
-  const matchSet = new Set();
-  for (const r of rows) {
-    let pass = true;
-    if (q) {
-      const hay = Object.values(r.values || {}).map(v => String(v ?? '').toLowerCase()).join(' ');
-      if (!hay.includes(q)) pass = false;
-    }
-    if (pass) {
-      for (const [colId, val] of filterEntries) {
-        if (String(r.values?.[colId] ?? '').toLowerCase() !== String(val).toLowerCase()) {
-          pass = false; break;
-        }
+function applySort(rows){
+  if(!state.ui.sortBy)return rows;
+  const{columnId,direction}=state.ui.sortBy;
+  const col=state.columns.find(c=>c.id===columnId);if(!col)return rows;
+  const bp=new Map();
+  for(const r of rows){const k=r.parentId||'__root__';if(!bp.has(k))bp.set(k,[]);bp.get(k).push(r);}
+  for(const arr of bp.values()){
+    arr.sort((a,b)=>{
+      let va=a.values?.[columnId],vb=b.values?.[columnId];
+      if(col.type==='number'||col.type==='date'){
+        va=va==null||va===''?-Infinity:(col.type==='date'?new Date(va).getTime():+va);
+        vb=vb==null||vb===''?-Infinity:(col.type==='date'?new Date(vb).getTime():+vb);
+        return direction==='asc'?va-vb:vb-va;
       }
-    }
-    if (pass) {
-      matchSet.add(r.id);
-      let cur = r;
-      while (cur.parentId) {
-        matchSet.add(cur.parentId);
-        cur = state.rows.find(x => x.id === cur.parentId);
-        if (!cur) break;
-      }
-    }
-  }
-  return rows.filter(r => matchSet.has(r.id));
-}
-
-function applySort(rows) {
-  if (!state.ui.sortBy) return rows;
-  const { columnId, direction } = state.ui.sortBy;
-  const col = state.columns.find(c => c.id === columnId);
-  if (!col) return rows;
-  // Sort within each parent group to preserve hierarchy.
-  const byParent = new Map();
-  for (const r of rows) {
-    const key = r.parentId || '__root__';
-    if (!byParent.has(key)) byParent.set(key, []);
-    byParent.get(key).push(r);
-  }
-  for (const arr of byParent.values()) {
-    arr.sort((a, b) => {
-      let va = a.values?.[columnId], vb = b.values?.[columnId];
-      if (col.type === 'number' || col.type === 'date') {
-        va = va == null || va === '' ? -Infinity : (col.type === 'date' ? new Date(va).getTime() : +va);
-        vb = vb == null || vb === '' ? -Infinity : (col.type === 'date' ? new Date(vb).getTime() : +vb);
-        return direction === 'asc' ? va - vb : vb - va;
-      }
-      va = String(va ?? '').toLowerCase(); vb = String(vb ?? '').toLowerCase();
-      if (va < vb) return direction === 'asc' ? -1 : 1;
-      if (va > vb) return direction === 'asc' ? 1 : -1;
+      va=String(va??'').toLowerCase();vb=String(vb??'').toLowerCase();
+      if(va<vb)return direction==='asc'?-1:1;
+      if(va>vb)return direction==='asc'?1:-1;
       return 0;
     });
   }
-  // Re-flatten in sorted order via DFS.
-  const out = [];
-  function walk(parentId) {
-    const arr = byParent.get(parentId || '__root__') || [];
-    for (const r of arr) { out.push(r); walk(r.id); }
-  }
-  walk(null);
-  return out;
+  const out=[];(function w(p){for(const r of(bp.get(p||'__root__')||[])){out.push(r);w(r.id);}})(null);return out;
 }
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
-/* ---------- Render: Table ---------- */
 function render() {
-  if (state.ui.view === 'table') renderTable();
-  else renderGantt();
+  if (state.ui.view === 'table') renderTable(); else renderGantt();
   document.getElementById('btnViewTable').classList.toggle('active', state.ui.view === 'table');
   document.getElementById('btnViewGantt').classList.toggle('active', state.ui.view === 'gantt');
   document.getElementById('tableWrap').style.display = state.ui.view === 'table' ? '' : 'none';
   document.getElementById('ganttWrap').style.display = state.ui.view === 'gantt' ? 'grid' : 'none';
-  const filterCount = Object.values(state.ui.filters || {}).filter(v => v !== '' && v != null).length;
-  document.getElementById('filterCount').textContent = filterCount > 0 ? `(${filterCount})` : '';
+  const fc = Object.values(state.ui.filters || {}).filter(v => v !== '' && v != null).length;
+  document.getElementById('filterCount').textContent = fc > 0 ? `(${fc})` : '';
   saveLocal();
 }
-
 function renderTable() {
-  const grid = document.getElementById('grid');
-  const thead = grid.querySelector('thead');
-  const tbody = grid.querySelector('tbody');
-  thead.innerHTML = '';
-  tbody.innerHTML = '';
-
+  const grid = document.getElementById('grid'); const thead = grid.querySelector('thead'); const tbody = grid.querySelector('tbody');
+  thead.innerHTML = ''; tbody.innerHTML = '';
   const visibleCols = state.columns.filter(c => c.visible !== false);
-
-  // Build group header row.
-  const groupRow = document.createElement('tr');
   const seenGroups = [];
   for (const col of visibleCols) {
-    const g = col.group || '';
-    const last = seenGroups[seenGroups.length - 1];
-    if (last && last.name === g && !state.collapsedGroups.includes(g)) {
-      last.span++;
-    } else {
-      seenGroups.push({ name: g, span: 1, collapsed: state.collapsedGroups.includes(g) });
-    }
+    const g = col.group || ''; const last = seenGroups[seenGroups.length - 1];
+    if (last && last.name === g && !state.collapsedGroups.includes(g)) last.span++;
+    else seenGroups.push({ name: g, span: 1, collapsed: state.collapsedGroups.includes(g) });
   }
-  // If a group is collapsed, we render only one narrow cell for it.
-  // Determine visible cols after collapse:
   const renderCols = [];
   for (const grp of seenGroups) {
-    if (grp.collapsed) {
-      renderCols.push({ kind: 'group-collapsed', group: grp.name });
-    } else {
-      for (const c of visibleCols) if ((c.group || '') === grp.name) renderCols.push({ kind: 'col', col: c });
-    }
+    if (grp.collapsed) renderCols.push({ kind: 'group-collapsed', group: grp.name });
+    else for (const c of visibleCols) if ((c.group || '') === grp.name) renderCols.push({ kind: 'col', col: c });
   }
-
-  // Group header row
-  let i = 0;
+  const groupRow = document.createElement('tr');
   for (const grp of seenGroups) {
-    const th = document.createElement('th');
-    th.className = 'group-header';
+    const th = document.createElement('th'); th.className = 'group-header';
     if (grp.collapsed) { th.colSpan = 1; th.style.width = '24px'; }
-    else {
-      // Count how many renderCols belong here
-      let span = 0;
-      for (const rc of renderCols) if (rc.kind === 'col' && (rc.col.group || '') === grp.name) span++;
-      th.colSpan = span || 1;
-    }
-    const inner = document.createElement('div');
-    inner.className = 'th-inner';
+    else { let span = 0; for (const rc of renderCols) if (rc.kind === 'col' && (rc.col.group || '') === grp.name) span++; th.colSpan = span || 1; }
+    const inner = document.createElement('div'); inner.className = 'th-inner';
     inner.innerHTML = `<span>${escapeHtml(grp.name || '—')}</span> <span style="color:var(--text-muted);font-size:11px">${grp.collapsed ? '▶' : '▼'}</span>`;
-    inner.title = grp.collapsed ? 'Click to expand group' : 'Click to collapse group';
     inner.addEventListener('click', () => toggleGroup(grp.name));
-    th.appendChild(inner);
-    groupRow.appendChild(th);
+    th.appendChild(inner); groupRow.appendChild(th);
   }
   thead.appendChild(groupRow);
-
-  // Column header row
   const colRow = document.createElement('tr');
   for (const rc of renderCols) {
     if (rc.kind === 'group-collapsed') {
-      const th = document.createElement('th');
-      th.className = 'group-collapsed-cell';
-      th.textContent = '⋯';
+      const th = document.createElement('th'); th.className = 'group-collapsed-cell'; th.textContent = '⋯';
       th.title = `Group "${rc.group}" collapsed. Click to expand.`;
-      th.addEventListener('click', () => toggleGroup(rc.group));
-      colRow.appendChild(th);
-      continue;
+      th.addEventListener('click', () => toggleGroup(rc.group)); colRow.appendChild(th); continue;
     }
-    const col = rc.col;
-    const th = document.createElement('th');
-    th.style.width = (col.width || 120) + 'px';
-    th.style.minWidth = (col.width || 120) + 'px';
-    const inner = document.createElement('div');
-    inner.className = 'th-inner';
-    const sortIcon = (state.ui.sortBy && state.ui.sortBy.columnId === col.id) ? (state.ui.sortBy.direction === 'asc' ? ' ▲' : ' ▼') : '';
-    inner.innerHTML = `<span>${escapeHtml(col.label)}</span><span style="color:var(--text-muted);font-size:11px">${sortIcon}</span>`;
-    inner.addEventListener('click', (e) => {
-      if (e.target.closest('.menu-btn')) return;
-      cycleSort(col.id);
-    });
-    const menuBtn = document.createElement('button');
-    menuBtn.className = 'menu-btn';
-    menuBtn.innerHTML = '⋮';
-    menuBtn.title = 'Column options';
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showColumnMenu(menuBtn, col);
-    });
-    inner.appendChild(menuBtn);
-    th.appendChild(inner);
-    const grip = document.createElement('div');
-    grip.className = 'grip';
-    attachColumnResize(grip, col);
-    th.appendChild(grip);
+    const col = rc.col; const th = document.createElement('th');
+    th.style.width = (col.width || 120) + 'px'; th.style.minWidth = (col.width || 120) + 'px';
+    const inner = document.createElement('div'); inner.className = 'th-inner';
+    const si = (state.ui.sortBy && state.ui.sortBy.columnId === col.id) ? (state.ui.sortBy.direction === 'asc' ? ' ▲' : ' ▼') : '';
+    inner.innerHTML = `<span>${escapeHtml(col.label)}</span><span style="color:var(--text-muted);font-size:11px">${si}</span>`;
+    inner.addEventListener('click', (e) => { if (e.target.closest('.menu-btn')) return; cycleSort(col.id); });
+    const mb = document.createElement('button'); mb.className = 'menu-btn'; mb.innerHTML = '⋮'; mb.title = 'Column options';
+    mb.addEventListener('click', (e) => { e.stopPropagation(); showColumnMenu(mb, col); });
+    inner.appendChild(mb); th.appendChild(inner);
+    const grip = document.createElement('div'); grip.className = 'grip'; attachColumnResize(grip, col); th.appendChild(grip);
     colRow.appendChild(th);
   }
   thead.appendChild(colRow);
-
-  // Body
-  let rows = getVisibleRows();
-  rows = applySort(rows);
-  rows = applySearchAndFilter(rows);
-
+  let rows = getVisibleRows(); rows = applySort(rows); rows = applySearchAndFilter(rows);
   if (rows.length === 0) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td');
+    const tr = document.createElement('tr'); const td = document.createElement('td');
     td.colSpan = renderCols.length;
-    td.innerHTML = `<div class="empty-state"><h3>No rows match</h3><div>Try clearing filters or search.</div></div>`;
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-    return;
+    td.innerHTML = `<div class="empty-state"><h3>No rows match</h3><div>Try clearing filters or search, or click + Add row.</div></div>`;
+    tr.appendChild(td); tbody.appendChild(tr); return;
   }
-
   for (const row of rows) {
-    const tr = document.createElement('tr');
-    tr.dataset.rowId = row.id;
+    const tr = document.createElement('tr'); tr.dataset.rowId = row.id;
     for (const rc of renderCols) {
-      if (rc.kind === 'group-collapsed') {
-        const td = document.createElement('td');
-        td.className = 'group-collapsed-cell';
-        td.addEventListener('click', () => toggleGroup(rc.group));
-        tr.appendChild(td);
-        continue;
-      }
-      const col = rc.col;
-      const td = document.createElement('td');
-      td.style.width = (col.width || 120) + 'px';
-      td.style.minWidth = (col.width || 120) + 'px';
-      td.appendChild(renderCell(row, col));
-      tr.appendChild(td);
+      if (rc.kind === 'group-collapsed') { const td = document.createElement('td'); td.className = 'group-collapsed-cell'; td.addEventListener('click', () => toggleGroup(rc.group)); tr.appendChild(td); continue; }
+      const col = rc.col; const td = document.createElement('td');
+      td.style.width = (col.width || 120) + 'px'; td.style.minWidth = (col.width || 120) + 'px';
+      td.appendChild(renderCell(row, col)); tr.appendChild(td);
     }
     tbody.appendChild(tr);
   }
 }
-
 function renderCell(row, col) {
-  // Special: name column gets indent + chevron + row actions
   if (col.id === 'col_name') {
-    const wrap = document.createElement('div');
-    wrap.className = 'name-cell';
-    const depth = depthOf(row);
-    const indent = document.createElement('span');
-    indent.className = 'indent';
-    indent.style.width = (depth * 18) + 'px';
-    wrap.appendChild(indent);
-    const chev = document.createElement('span');
-    chev.className = 'chevron';
+    const wrap = document.createElement('div'); wrap.className = 'name-cell';
+    const indent = document.createElement('span'); indent.className = 'indent'; indent.style.width = (depthOf(row) * 18) + 'px'; wrap.appendChild(indent);
+    const chev = document.createElement('span'); chev.className = 'chevron';
     const hasChildren = state.rows.some(r => r.parentId === row.id);
-    if (hasChildren) {
-      chev.textContent = row.expanded ? '▾' : '▸';
-      chev.title = row.expanded ? 'Collapse' : 'Expand';
-      chev.addEventListener('click', () => { row.expanded = !row.expanded; render(); });
-    } else {
-      chev.classList.add('placeholder');
-      chev.textContent = '·';
-    }
+    if (hasChildren) { chev.textContent = row.expanded ? '▾' : '▸'; chev.addEventListener('click', () => { row.expanded = !row.expanded; render(); }); }
+    else { chev.classList.add('placeholder'); chev.textContent = '·'; }
     wrap.appendChild(chev);
-    const inp = document.createElement('input');
-    inp.className = 'name-input';
-    inp.type = 'text';
-    inp.value = row.values?.col_name || '';
-    inp.placeholder = 'Untitled';
+    const inp = document.createElement('input'); inp.className = 'name-input'; inp.type = 'text'; inp.value = row.values?.col_name || ''; inp.placeholder = 'Untitled';
     inp.addEventListener('change', () => { row.values.col_name = inp.value; saveLocal(); });
     wrap.appendChild(inp);
-    const actions = document.createElement('div');
-    actions.className = 'row-actions';
-    const addChildBtn = document.createElement('button');
-    addChildBtn.title = 'Add child row';
-    addChildBtn.textContent = '+ child';
-    addChildBtn.addEventListener('click', () => addRow(row.id));
-    const delBtn = document.createElement('button');
-    delBtn.title = 'Delete row (and children)';
-    delBtn.textContent = '🗑';
-    delBtn.className = 'danger';
-    delBtn.addEventListener('click', () => deleteRow(row.id));
-    actions.appendChild(addChildBtn);
-    actions.appendChild(delBtn);
-    wrap.appendChild(actions);
+    const actions = document.createElement('div'); actions.className = 'row-actions';
+    const a1 = document.createElement('button'); a1.textContent = '+ child'; a1.addEventListener('click', () => addRow(row.id));
+    const a2 = document.createElement('button'); a2.textContent = '🗑'; a2.className = 'danger'; a2.addEventListener('click', () => deleteRow(row.id));
+    actions.appendChild(a1); actions.appendChild(a2); wrap.appendChild(actions);
     return wrap;
   }
-
-  // Status / priority pills
-  if (col.id === 'col_status' || col.type === 'select') {
+  if (col.type === 'select') {
     const wrap = document.createElement('div'); wrap.className = 'cell';
     const sel = document.createElement('select');
     const blank = document.createElement('option'); blank.value = ''; blank.textContent = '—'; sel.appendChild(blank);
-    for (const opt of (col.options || [])) {
-      const o = document.createElement('option'); o.value = opt; o.textContent = opt;
-      if ((row.values?.[col.id] || '') === opt) o.selected = true;
-      sel.appendChild(o);
-    }
+    for (const o of (col.options || [])) { const op = document.createElement('option'); op.value = o; op.textContent = o; if ((row.values?.[col.id] || '') === o) op.selected = true; sel.appendChild(op); }
     if ((row.values?.[col.id] || '') === '') blank.selected = true;
     sel.addEventListener('change', () => { row.values[col.id] = sel.value; render(); });
-    wrap.appendChild(sel);
-    return wrap;
+    wrap.appendChild(sel); return wrap;
   }
-
   if (col.type === 'checkbox') {
     const wrap = document.createElement('div'); wrap.className = 'cell'; wrap.style.justifyContent = 'center';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = !!row.values?.[col.id];
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!row.values?.[col.id];
     cb.addEventListener('change', () => { row.values[col.id] = cb.checked; saveLocal(); });
-    wrap.appendChild(cb);
-    return wrap;
+    wrap.appendChild(cb); return wrap;
   }
-
   if (col.type === 'date') {
     const wrap = document.createElement('div'); wrap.className = 'cell';
-    const inp = document.createElement('input');
-    inp.type = 'date';
-    inp.value = row.values?.[col.id] || '';
+    const inp = document.createElement('input'); inp.type = 'date'; inp.value = row.values?.[col.id] || '';
     inp.addEventListener('change', () => { row.values[col.id] = inp.value; saveLocal(); if (state.ui.view === 'gantt') render(); });
-    wrap.appendChild(inp);
-    return wrap;
+    wrap.appendChild(inp); return wrap;
   }
-
   if (col.type === 'number') {
     const wrap = document.createElement('div'); wrap.className = 'cell';
-    // Special render for % done: show progress bar plus input
     if (col.id === 'col_progress') {
-      const bar = document.createElement('div');
-      bar.className = 'progress-bar';
-      bar.style.flex = '1';
-      bar.style.marginRight = '6px';
-      const fill = document.createElement('div');
-      const v = clamp(+(row.values?.col_progress || 0), 0, 100);
-      fill.style.width = v + '%';
-      bar.appendChild(fill);
-      wrap.appendChild(bar);
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.min = 0; inp.max = 100;
-      inp.style.width = '50px';
-      inp.value = v;
+      const bar = document.createElement('div'); bar.className = 'progress-bar'; bar.style.flex = '1'; bar.style.marginRight = '6px';
+      const fill = document.createElement('div'); const v = clamp(+(row.values?.col_progress || 0), 0, 100); fill.style.width = v + '%'; bar.appendChild(fill); wrap.appendChild(bar);
+      const inp = document.createElement('input'); inp.type = 'number'; inp.min = 0; inp.max = 100; inp.style.width = '50px'; inp.value = v;
       inp.addEventListener('change', () => { row.values.col_progress = clamp(+inp.value, 0, 100); render(); });
-      wrap.appendChild(inp);
-      return wrap;
+      wrap.appendChild(inp); return wrap;
     }
-    const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.value = row.values?.[col.id] ?? '';
+    const inp = document.createElement('input'); inp.type = 'number'; inp.value = row.values?.[col.id] ?? '';
     inp.addEventListener('change', () => { row.values[col.id] = inp.value === '' ? '' : +inp.value; saveLocal(); });
-    wrap.appendChild(inp);
-    return wrap;
+    wrap.appendChild(inp); return wrap;
   }
-
-  // Default: text
   const wrap = document.createElement('div'); wrap.className = 'cell';
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.value = row.values?.[col.id] ?? '';
+  const inp = document.createElement('input'); inp.type = 'text'; inp.value = row.values?.[col.id] ?? '';
   inp.addEventListener('change', () => { row.values[col.id] = inp.value; saveLocal(); });
-  wrap.appendChild(inp);
-  return wrap;
+  wrap.appendChild(inp); return wrap;
 }
-
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-function escapeHtml(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-/* ---------- Sort & Group toggles ---------- */
-function cycleSort(colId) {
-  const s = state.ui.sortBy;
-  if (!s || s.columnId !== colId) state.ui.sortBy = { columnId: colId, direction: 'asc' };
-  else if (s.direction === 'asc') state.ui.sortBy = { columnId: colId, direction: 'desc' };
-  else state.ui.sortBy = null;
-  render();
-}
-function toggleGroup(name) {
-  const idx = state.collapsedGroups.indexOf(name);
-  if (idx === -1) state.collapsedGroups.push(name);
-  else state.collapsedGroups.splice(idx, 1);
-  render();
-}
-
-/* ---------- Row CRUD ---------- */
-function addRow(parentId) {
-  state.rows.push({ id: uid(), parentId: parentId || null, expanded: true, values: { col_name: '' } });
-  if (parentId) {
-    const p = state.rows.find(r => r.id === parentId);
-    if (p) p.expanded = true;
-  }
-  render();
-}
-function deleteRow(id) {
-  if (!confirm('Delete this row and all its children?')) return;
-  const toRemove = new Set([id, ...descendantsOf(id).map(r => r.id)]);
-  state.rows = state.rows.filter(r => !toRemove.has(r.id));
-  render();
-}
-
-/* ---------- Column resize ---------- */
+function cycleSort(c){const s=state.ui.sortBy;if(!s||s.columnId!==c)state.ui.sortBy={columnId:c,direction:'asc'};else if(s.direction==='asc')state.ui.sortBy={columnId:c,direction:'desc'};else state.ui.sortBy=null;render();}
+function toggleGroup(n){const i=state.collapsedGroups.indexOf(n);if(i===-1)state.collapsedGroups.push(n);else state.collapsedGroups.splice(i,1);render();}
+function addRow(p){state.rows.push({id:uid(),parentId:p||null,expanded:true,values:{col_name:''}});if(p){const x=state.rows.find(r=>r.id===p);if(x)x.expanded=true;}render();}
+function deleteRow(id){if(!confirm('Delete this row and all its children?'))return;const rm=new Set([id,...descendantsOf(id).map(r=>r.id)]);state.rows=state.rows.filter(r=>!rm.has(r.id));render();}
 function attachColumnResize(grip, col) {
-  let startX, startW;
-  grip.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    startX = e.clientX; startW = col.width || 120;
-    const move = (ev) => {
-      col.width = Math.max(60, startW + (ev.clientX - startX));
-      // Cheap live update: requestAnimationFrame render
-      requestAnimationFrame(render);
-    };
-    const up = () => {
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-      saveLocal();
-    };
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
+  let sx, sw;
+  grip.addEventListener('mousedown', (e) => { e.preventDefault(); sx = e.clientX; sw = col.width || 120;
+    const mv = (ev) => { col.width = Math.max(60, sw + (ev.clientX - sx)); requestAnimationFrame(render); };
+    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); saveLocal(); };
+    document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
   });
 }
-
-/* ---------- Column menu ---------- */
 let openMenuEl = null;
-document.addEventListener('click', (e) => {
-  if (openMenuEl && !openMenuEl.contains(e.target)) { openMenuEl.remove(); openMenuEl = null; }
-});
+document.addEventListener('click', (e) => { if (openMenuEl && !openMenuEl.contains(e.target)) { openMenuEl.remove(); openMenuEl = null; } });
 function showColumnMenu(anchor, col) {
   if (openMenuEl) { openMenuEl.remove(); openMenuEl = null; }
-  const menu = document.createElement('div');
-  menu.className = 'menu';
-  const rect = anchor.getBoundingClientRect();
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.style.left = (rect.left - 100) + 'px';
-  menu.innerHTML = `
-    <div class="menu-label">${escapeHtml(col.label)}</div>
+  const m = document.createElement('div'); m.className = 'menu';
+  const r = anchor.getBoundingClientRect(); m.style.top = (r.bottom + 4) + 'px'; m.style.left = (r.left - 100) + 'px';
+  m.innerHTML = `<div class="menu-label">${escapeHtml(col.label)}</div>
     <button data-act="sort-asc">Sort ascending</button>
     <button data-act="sort-desc">Sort descending</button>
     <button data-act="clear-sort">Clear sort</button>
@@ -723,454 +387,288 @@ function showColumnMenu(anchor, col) {
     <button data-act="type">Change type…</button>
     ${col.type === 'select' ? '<button data-act="options">Edit options…</button>' : ''}
     <button data-act="hide">Hide column</button>
-    ${!col.locked ? '<button data-act="delete" class="danger">Delete column</button>' : ''}
-  `;
-  document.body.appendChild(menu);
-  openMenuEl = menu;
-  menu.addEventListener('click', (e) => {
-    const act = e.target?.dataset?.act;
-    if (!act) return;
-    if (act === 'sort-asc') state.ui.sortBy = { columnId: col.id, direction: 'asc' };
-    else if (act === 'sort-desc') state.ui.sortBy = { columnId: col.id, direction: 'desc' };
-    else if (act === 'clear-sort') state.ui.sortBy = null;
-    else if (act === 'rename') {
-      const v = prompt('New name:', col.label); if (v != null && v.trim()) col.label = v.trim();
-    }
-    else if (act === 'type') {
-      const v = prompt('Type (text, number, date, select, checkbox):', col.type);
-      if (v && ['text','number','date','select','checkbox'].includes(v.trim())) col.type = v.trim();
-    }
-    else if (act === 'options') {
-      const v = prompt('Options (comma-separated):', (col.options || []).join(', '));
-      if (v != null) col.options = v.split(',').map(s => s.trim()).filter(Boolean);
-    }
-    else if (act === 'hide') col.visible = false;
-    else if (act === 'delete') {
-      if (confirm(`Delete column "${col.label}" and all its data?`)) {
-        state.columns = state.columns.filter(c => c.id !== col.id);
-        for (const r of state.rows) delete r.values[col.id];
-      }
-    }
-    menu.remove(); openMenuEl = null;
-    render();
+    ${!col.locked ? '<button data-act="delete" class="danger">Delete column</button>' : ''}`;
+  document.body.appendChild(m); openMenuEl = m;
+  m.addEventListener('click', (e) => {
+    const a = e.target?.dataset?.act; if (!a) return;
+    if (a === 'sort-asc') state.ui.sortBy = { columnId: col.id, direction: 'asc' };
+    else if (a === 'sort-desc') state.ui.sortBy = { columnId: col.id, direction: 'desc' };
+    else if (a === 'clear-sort') state.ui.sortBy = null;
+    else if (a === 'rename') { const v = prompt('New name:', col.label); if (v != null && v.trim()) col.label = v.trim(); }
+    else if (a === 'type') { const v = prompt('Type (text, number, date, select, checkbox):', col.type); if (v && ['text','number','date','select','checkbox'].includes(v.trim())) col.type = v.trim(); }
+    else if (a === 'options') { const v = prompt('Options (comma-separated):', (col.options || []).join(', ')); if (v != null) col.options = v.split(',').map(s => s.trim()).filter(Boolean); }
+    else if (a === 'hide') col.visible = false;
+    else if (a === 'delete') { if (confirm(`Delete column "${col.label}" and all its data?`)) { state.columns = state.columns.filter(c => c.id !== col.id); for (const r of state.rows) delete r.values[col.id]; } }
+    m.remove(); openMenuEl = null; render();
   });
 }
-
-/* ---------- Modals ---------- */
 function openModal(title, bodyEl, footerEls) {
   const back = document.createElement('div'); back.className = 'modal-backdrop';
   const m = document.createElement('div'); m.className = 'modal';
   const h = document.createElement('h2'); h.textContent = title; m.appendChild(h);
   const body = document.createElement('div'); body.className = 'modal-body'; body.appendChild(bodyEl); m.appendChild(body);
-  const f = document.createElement('div'); f.className = 'modal-footer';
-  for (const el of footerEls) f.appendChild(el);
-  m.appendChild(f);
-  back.appendChild(m);
-  back.addEventListener('click', (e) => { if (e.target === back) back.remove(); });
-  document.body.appendChild(back);
-  return back;
+  const f = document.createElement('div'); f.className = 'modal-footer'; for (const el of footerEls) f.appendChild(el); m.appendChild(f);
+  back.appendChild(m); back.addEventListener('click', (e) => { if (e.target === back) back.remove(); });
+  document.body.appendChild(back); return back;
 }
-
-/* ---------- Manage columns modal ---------- */
 function openManageColumns() {
   const body = document.createElement('div');
   body.innerHTML = `<p style="margin-top:0;color:var(--text-muted)">Drag to reorder. Toggle visibility. Edit name, type, group, options.</p>`;
-  const ul = document.createElement('ul');
-  ul.className = 'col-list';
-
-  function rebuildList() {
+  const ul = document.createElement('ul'); ul.className = 'col-list';
+  function rebuild() {
     ul.innerHTML = '';
     for (const col of state.columns) {
-      const li = document.createElement('li');
-      li.draggable = true;
-      li.dataset.id = col.id;
-      li.innerHTML = `
-        <span class="handle" title="Drag to reorder">⋮⋮</span>
-        <input type="checkbox" ${col.visible !== false ? 'checked' : ''} data-act="vis" title="Visible">
+      const li = document.createElement('li'); li.draggable = true; li.dataset.id = col.id;
+      li.innerHTML = `<span class="handle" title="Drag to reorder">⋮⋮</span>
+        <input type="checkbox" ${col.visible !== false ? 'checked' : ''} data-act="vis">
         <input type="text" class="col-name" value="${escapeHtml(col.label)}" data-act="label">
-        <select data-act="type" class="col-type">
-          ${['text','number','date','select','checkbox'].map(t => `<option value="${t}" ${col.type===t?'selected':''}>${t}</option>`).join('')}
-        </select>
+        <select data-act="type" class="col-type">${['text','number','date','select','checkbox'].map(t => `<option value="${t}" ${col.type===t?'selected':''}>${t}</option>`).join('')}</select>
         <input type="text" placeholder="Group" value="${escapeHtml(col.group||'')}" data-act="group" style="width:90px">
         ${col.type === 'select' ? `<input type="text" placeholder="opt1, opt2, …" value="${escapeHtml((col.options||[]).join(', '))}" data-act="opts" style="width:150px">` : ''}
-        ${col.locked ? '<span style="color:var(--text-muted);font-size:11px">locked</span>' : '<button data-act="del" class="danger icon" title="Delete">🗑</button>'}
-      `;
+        ${col.locked ? '<span style="color:var(--text-muted);font-size:11px">locked</span>' : '<button data-act="del" class="danger icon">🗑</button>'}`;
       li.addEventListener('input', (e) => {
-        const act = e.target?.dataset?.act;
-        if (!act) return;
-        if (act === 'vis') col.visible = e.target.checked;
-        else if (act === 'label') col.label = e.target.value;
-        else if (act === 'type') { col.type = e.target.value; rebuildList(); }
-        else if (act === 'group') col.group = e.target.value;
-        else if (act === 'opts') col.options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean);
+        const a = e.target?.dataset?.act; if (!a) return;
+        if (a === 'vis') col.visible = e.target.checked;
+        else if (a === 'label') col.label = e.target.value;
+        else if (a === 'type') { col.type = e.target.value; rebuild(); }
+        else if (a === 'group') col.group = e.target.value;
+        else if (a === 'opts') col.options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean);
       });
-      li.addEventListener('click', (e) => {
-        if (e.target?.dataset?.act === 'del') {
-          if (col.locked) return;
-          if (confirm(`Delete column "${col.label}" and all its data?`)) {
-            state.columns = state.columns.filter(c => c.id !== col.id);
-            for (const r of state.rows) delete r.values[col.id];
-            rebuildList();
-          }
-        }
-      });
-      // Drag and drop
+      li.addEventListener('click', (e) => { if (e.target?.dataset?.act === 'del') { if (col.locked) return; if (confirm(`Delete column "${col.label}" and all its data?`)) { state.columns = state.columns.filter(c => c.id !== col.id); for (const r of state.rows) delete r.values[col.id]; rebuild(); } } });
       li.addEventListener('dragstart', (e) => { li.classList.add('dragging'); e.dataTransfer.setData('text/plain', col.id); });
       li.addEventListener('dragend', () => li.classList.remove('dragging'));
-      li.addEventListener('dragover', (e) => { e.preventDefault(); });
+      li.addEventListener('dragover', (e) => e.preventDefault());
       li.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const draggedId = e.dataTransfer.getData('text/plain');
-        if (!draggedId || draggedId === col.id) return;
-        const from = state.columns.findIndex(c => c.id === draggedId);
-        const to = state.columns.findIndex(c => c.id === col.id);
-        if (from < 0 || to < 0) return;
-        const [moved] = state.columns.splice(from, 1);
-        state.columns.splice(to, 0, moved);
-        rebuildList();
+        e.preventDefault(); const d = e.dataTransfer.getData('text/plain');
+        if (!d || d === col.id) return;
+        const from = state.columns.findIndex(c => c.id === d); const to = state.columns.findIndex(c => c.id === col.id);
+        if (from < 0 || to < 0) return; const [mv] = state.columns.splice(from, 1); state.columns.splice(to, 0, mv); rebuild();
       });
       ul.appendChild(li);
     }
   }
-  rebuildList();
-  body.appendChild(ul);
-
-  const addBtn = document.createElement('button');
-  addBtn.textContent = '+ Add column';
-  addBtn.addEventListener('click', () => {
-    const id = 'col_' + uid();
-    state.columns.push({ id, label: 'New column', type: 'text', group: 'Custom', width: 140, visible: true });
-    rebuildList();
-  });
+  rebuild(); body.appendChild(ul);
+  const addBtn = document.createElement('button'); addBtn.textContent = '+ Add column';
+  addBtn.addEventListener('click', () => { state.columns.push({ id: 'col_' + uid(), label: 'New column', type: 'text', group: 'Custom', width: 140, visible: true }); rebuild(); });
   body.appendChild(addBtn);
-
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'primary';
-  closeBtn.textContent = 'Done';
-  const back = openModal('Manage columns', body, [closeBtn]);
-  closeBtn.addEventListener('click', () => { back.remove(); render(); });
+  const close = document.createElement('button'); close.className = 'primary'; close.textContent = 'Done';
+  const back = openModal('Manage columns', body, [close]);
+  close.addEventListener('click', () => { back.remove(); render(); });
 }
-
-/* ---------- Filter modal ---------- */
 function openFilter() {
   const body = document.createElement('div');
-  body.innerHTML = `<p style="margin-top:0;color:var(--text-muted)">Filter rows by column value. Rows with matching descendants will keep their ancestors visible.</p>`;
+  body.innerHTML = `<p style="margin-top:0;color:var(--text-muted)">Filter rows by column value. Ancestors of matching rows remain visible.</p>`;
   for (const col of state.columns) {
     if (col.id === 'col_name') continue;
     const fld = document.createElement('div'); fld.className = 'field';
     const lbl = document.createElement('label'); lbl.textContent = col.label; fld.appendChild(lbl);
     let inp;
-    if (col.type === 'select') {
-      inp = document.createElement('select');
-      inp.innerHTML = `<option value="">— Any —</option>` + (col.options || []).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
-    } else if (col.type === 'checkbox') {
-      inp = document.createElement('select');
-      inp.innerHTML = `<option value="">— Any —</option><option value="true">Checked</option><option value="false">Unchecked</option>`;
-    } else {
-      inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = `Contains…`;
-    }
+    if (col.type === 'select') { inp = document.createElement('select'); inp.innerHTML = `<option value="">— Any —</option>` + (col.options || []).map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join(''); }
+    else if (col.type === 'checkbox') { inp = document.createElement('select'); inp.innerHTML = `<option value="">— Any —</option><option value="true">Checked</option><option value="false">Unchecked</option>`; }
+    else { inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = 'Contains…'; }
     inp.value = state.ui.filters?.[col.id] ?? '';
-    inp.addEventListener('input', () => {
-      state.ui.filters = state.ui.filters || {};
-      state.ui.filters[col.id] = inp.value;
-    });
-    fld.appendChild(inp);
-    body.appendChild(fld);
+    inp.addEventListener('input', () => { state.ui.filters = state.ui.filters || {}; state.ui.filters[col.id] = inp.value; });
+    fld.appendChild(inp); body.appendChild(fld);
   }
-  const clearBtn = document.createElement('button');
-  clearBtn.textContent = 'Clear all';
-  clearBtn.addEventListener('click', () => { state.ui.filters = {}; back.remove(); render(); });
-  const okBtn = document.createElement('button'); okBtn.className = 'primary'; okBtn.textContent = 'Apply';
-  const back = openModal('Filter', body, [clearBtn, okBtn]);
-  okBtn.addEventListener('click', () => { back.remove(); render(); });
+  const clr = document.createElement('button'); clr.textContent = 'Clear all';
+  clr.addEventListener('click', () => { state.ui.filters = {}; back.remove(); render(); });
+  const ok = document.createElement('button'); ok.className = 'primary'; ok.textContent = 'Apply';
+  const back = openModal('Filter', body, [clr, ok]);
+  ok.addEventListener('click', () => { back.remove(); render(); });
 }
-
-/* ---------- Settings modal ---------- */
 function openSettings() {
   const body = document.createElement('div');
   body.innerHTML = `
-    <div class="field">
-      <label>Google Apps Script Web App URL</label>
-      <input type="url" id="settingsUrl" placeholder="https://script.google.com/macros/s/…/exec">
-    </div>
-    <p style="font-size:12px;color:var(--text-muted)">See the setup guide for how to create this URL. Treat it like a password — anyone with it can read/write your data.</p>
-  `;
-  const inp = body.querySelector('#settingsUrl');
-  inp.value = state.settings.appsScriptUrl || '';
-  const cancelBtn = document.createElement('button'); cancelBtn.textContent = 'Cancel';
-  const saveBtn = document.createElement('button'); saveBtn.className = 'primary'; saveBtn.textContent = 'Save';
-  const back = openModal('Settings', body, [cancelBtn, saveBtn]);
-  cancelBtn.addEventListener('click', () => back.remove());
-  saveBtn.addEventListener('click', () => {
-    state.settings.appsScriptUrl = inp.value.trim();
-    saveLocal();
-    back.remove();
-    updateStatus();
+    <div class="field"><label>JSONBin Master Key (X-Master-Key)</label><input type="password" id="settingsKey" placeholder="$2a$10$… (looks like a long hash)"></div>
+    <div class="field"><label>JSONBin Bin ID</label><input type="text" id="settingsBin" placeholder="24-char hex from the bin URL"></div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0">
+      Sign up at <a href="https://jsonbin.io" target="_blank" rel="noopener">jsonbin.io</a> (free), create a bin with content <code>{}</code>, then copy:
+      <br>• <strong>API Keys</strong> → Master Key
+      <br>• <strong>My Bins</strong> → click the bin → copy the Bin ID
+      <br>Treat both like a password — anyone with them can read/write your bin.
+    </p>`;
+  const k = body.querySelector('#settingsKey'); const b = body.querySelector('#settingsBin');
+  k.value = state.settings.jsonbinApiKey || ''; b.value = state.settings.jsonbinBinId || '';
+  const cancel = document.createElement('button'); cancel.textContent = 'Cancel';
+  const save = document.createElement('button'); save.className = 'primary'; save.textContent = 'Save';
+  const back = openModal('Settings', body, [cancel, save]);
+  cancel.addEventListener('click', () => back.remove());
+  save.addEventListener('click', () => {
+    state.settings.jsonbinApiKey = k.value.trim();
+    state.settings.jsonbinBinId = extractBinId(b.value.trim());
+    saveLocal(); back.remove(); updateStatus();
   });
 }
-
-/* ---------- Sync with Apps Script ---------- */
-function setStatus(text, kind) {
-  const el = document.getElementById('status');
-  el.textContent = text;
-  el.className = 'status' + (kind ? ' ' + kind : '');
+function extractBinId(input) {
+  if (!input) return '';
+  // Tolerate full URLs like https://jsonbin.io/.../b/{ID} or https://api.jsonbin.io/v3/b/{ID}
+  const m = input.match(/\/b\/([a-zA-Z0-9]+)/);
+  return m ? m[1] : input;
 }
-function updateStatus() {
-  if (!state.settings.appsScriptUrl) { setStatus('Local only (no sync URL set)'); return; }
-  setStatus('Ready to sync');
+
+/* ============================================================
+   JSONBIN.IO API
+   ============================================================ */
+async function jsonbinApi(method, body) {
+  const key = state.settings.jsonbinApiKey;
+  const bin = state.settings.jsonbinBinId;
+  if (!key || !bin) throw new Error('JSONBin not configured. Open Settings.');
+  const url = method === 'GET'
+    ? `https://api.jsonbin.io/v3/b/${bin}/latest`
+    : `https://api.jsonbin.io/v3/b/${bin}`;
+  const headers = { 'Content-Type': 'application/json', 'X-Master-Key': key };
+  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  const text = await res.text();
+  if (!res.ok) {
+    let err = null; try { err = JSON.parse(text); } catch {}
+    const msg = err?.message || ('HTTP ' + res.status + ': ' + text.slice(0, 200));
+    throw new Error(msg);
+  }
+  return text ? JSON.parse(text) : {};
 }
 
 async function testConnection() {
-  const url = state.settings.appsScriptUrl;
-  if (!url) { openSettings(); return; }
+  if (!state.settings.jsonbinApiKey || !state.settings.jsonbinBinId) {
+    alert('Configure Settings first (API key + bin ID).'); openSettings(); return;
+  }
   setStatus('Testing…');
   try {
-    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
-    const text = await res.text();
-    let preview = text.slice(0, 200);
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + preview);
-    // Try to parse as JSON to confirm the endpoint is the web app (not an HTML error page)
-    let parsed;
-    try { parsed = JSON.parse(text); }
-    catch (pe) { throw new Error('Got non-JSON response (likely an HTML error page). First 200 chars: ' + preview); }
-    if (parsed.error) throw new Error('Backend returned: ' + parsed.error);
-    const rowCount = parsed.rows ? parsed.rows.length : 0;
-    setStatus(`Connection OK · ${rowCount} rows in sheet · ${new Date().toLocaleTimeString()}`, 'ok');
-    alert('Connection OK.\n\nGET to the Apps Script returned valid JSON.\nRows in sheet: ' + rowCount + '\n\nYou can now Sync.');
+    const result = await jsonbinApi('GET');
+    // JSONBin v3 returns: { record: {...}, metadata: {...} }
+    const data = result.record;
+    let rowCount = 0;
+    if (data && data.rows && Array.isArray(data.rows)) rowCount = data.rows.length;
+    setStatus('Connection OK · ' + rowCount + ' rows · ' + new Date().toLocaleTimeString(), 'ok');
+    alert('Connection OK.\nJSONBin reachable.\nRows currently in bin: ' + rowCount + (rowCount === 0 ? '\n\n(Bin is empty or contains non-PM-Tool data — push your local data with Sync to seed it.)' : ''));
   } catch (e) {
-    console.error('testConnection failed', e);
     setStatus('Test failed: ' + e.message, 'err');
-    alert('Connection test FAILED.\n\nUnderlying error:\n' + e.message + '\n\nDiagnosis:\n• If it says "Failed to fetch" → the browser blocked the request (CORS or wrong URL). Open the URL directly in your browser; if you see JSON there but not here, your URL ending is wrong (use /exec not /dev) or your access level is "Anyone with Google account" instead of "Anyone".\n• If it says HTTP 401/403 → access is not actually set to Anyone. In Apps Script: Deploy → Manage Deployments → Edit (pencil) → Version: New version → Who has access: Anyone → Deploy. Then update the URL in Settings if it changed.\n• If it says "non-JSON" → the URL is pointing to the script editor or an old deployment.');
+    alert('Connection FAILED.\n\nUnderlying error:\n' + e.message + '\n\nCommon causes:\n• API key wrong (check Master Key on jsonbin.io)\n• Bin ID wrong\n• Bin was deleted or you don\'t have access\n• jsonbin.io blocked by your network proxy — if so, try GitHub Gist instead (ask Claude to switch)');
   }
 }
 
 async function syncNow() {
-  const url = state.settings.appsScriptUrl;
-  if (!url) { openSettings(); return; }
+  if (!state.settings.jsonbinApiKey || !state.settings.jsonbinBinId) {
+    alert('Configure Settings first.'); openSettings(); return;
+  }
   setStatus('Syncing…');
   try {
-    const choice = confirm('Sync direction:\n\nOK = push local → sheet (overwrites remote)\nCancel = pull sheet → local (overwrites local)');
+    const choice = confirm('Sync direction:\n\nOK = push local → bin (overwrites remote)\nCancel = pull bin → local (overwrites local)');
     if (choice) {
-      // Push: use URL-encoded form data. This survives Apps Script's /exec → script.googleusercontent.com
-      // redirect, which strips JSON bodies in some browsers. URLSearchParams uses the
-      // application/x-www-form-urlencoded content type, which is a CORS "simple" request
-      // and is the standard Apps Script pattern.
-      const body = new URLSearchParams();
-      body.append('data', JSON.stringify(state));
-      const res = await fetch(url, { method: 'POST', body, redirect: 'follow' });
-      const text = await res.text();
-      if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + text.slice(0, 200));
-      let j;
-      try { j = JSON.parse(text); }
-      catch (pe) { throw new Error('Backend returned non-JSON. First 200 chars: ' + text.slice(0, 200)); }
-      if (j.error) throw new Error('Backend error: ' + j.error);
-      setStatus(`Pushed ${j.bytes || '?'} bytes to Sheet · ${new Date().toLocaleTimeString()}`, 'ok');
+      const json = JSON.stringify(state);
+      await jsonbinApi('PUT', state);
+      setStatus(`Pushed ${json.length} bytes · ${new Date().toLocaleTimeString()}`, 'ok');
     } else {
-      const res = await fetch(url, { method: 'GET', redirect: 'follow' });
-      const text = await res.text();
-      if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + text.slice(0, 200));
-      if (!text || text === '{}' || text.trim() === '') {
-        if (!confirm('Remote sheet is empty. Push local data to it now?')) { setStatus('Pull cancelled'); return; }
+      const result = await jsonbinApi('GET');
+      const remote = result.record;
+      if (!remote || !remote.columns || !remote.rows) {
+        if (!confirm('Bin is empty or not a valid PM Tool snapshot. Push local data to it now?')) { setStatus('Pull cancelled'); return; }
         return syncNow();
       }
-      let remote;
-      try { remote = JSON.parse(text); }
-      catch (pe) { throw new Error('Backend returned non-JSON. First 200 chars: ' + text.slice(0, 200)); }
-      if (remote.error) throw new Error('Backend error: ' + remote.error);
-      if (!remote.columns || !remote.rows) throw new Error('Remote data is not a valid PM Tool snapshot.');
-      state = remote;
-      saveLocal();
-      render();
-      setStatus('Pulled from Sheet · ' + new Date().toLocaleTimeString(), 'ok');
+      state = remote; saveLocal(); render();
+      setStatus('Pulled from bin · ' + new Date().toLocaleTimeString(), 'ok');
     }
   } catch (e) {
-    console.error('syncNow failed', e);
     setStatus('Sync error: ' + e.message, 'err');
-    alert('Sync FAILED.\n\nUnderlying error:\n' + e.message + '\n\nTry clicking the Test button — it only does a GET, which isolates whether the problem is connectivity or specifically POST handling.');
+    alert('Sync FAILED.\n\nUnderlying error:\n' + e.message);
   }
 }
 
-/* ---------- Export / Import ---------- */
 function exportJson() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'pmtool-export-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'pmtool-export-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
 }
 function importJson(file) {
   const r = new FileReader();
   r.onload = () => {
-    try {
-      const j = JSON.parse(r.result);
-      if (!j.columns || !j.rows) throw new Error('Not a valid PM Tool export.');
+    try { const j = JSON.parse(r.result); if (!j.columns || !j.rows) throw new Error('Not a valid PM Tool export.');
       if (!confirm('Replace all current data with imported file?')) return;
-      state = j;
-      saveLocal();
-      render();
-      updateStatus();
+      state = j; saveLocal(); render(); updateStatus();
     } catch (e) { alert('Import failed: ' + e.message); }
   };
   r.readAsText(file);
 }
+function setStatus(t, k) { const el = document.getElementById('status'); el.textContent = t; el.className = 'status' + (k ? ' ' + k : ''); }
+function updateStatus() {
+  if (!state.settings.jsonbinApiKey || !state.settings.jsonbinBinId) { setStatus('Setup needed — click Settings'); return; }
+  setStatus('Configured · click Test or Sync', 'ok');
+}
 
-/* ============================================================
-   GANTT VIEW
-   ============================================================ */
 function renderGantt() {
-  // Determine date range across all rows
   const rows = applySearchAndFilter(applySort(getVisibleRows()));
   const dates = [];
-  for (const r of rows) {
-    const s = r.values?.col_start, e = r.values?.col_end;
-    if (s) dates.push(new Date(s));
-    if (e) dates.push(new Date(e));
-  }
+  for (const r of rows) { const s=r.values?.col_start, e=r.values?.col_end; if (s) dates.push(new Date(s)); if (e) dates.push(new Date(e)); }
   let minD, maxD;
-  if (dates.length === 0) {
-    minD = new Date(); minD.setDate(minD.getDate() - 7);
-    maxD = new Date(); maxD.setDate(maxD.getDate() + 30);
-  } else {
-    minD = new Date(Math.min(...dates));
-    maxD = new Date(Math.max(...dates));
-    minD.setDate(minD.getDate() - 3);
-    maxD.setDate(maxD.getDate() + 3);
-  }
-  // Quantize to day boundaries
+  if (dates.length === 0) { minD = new Date(); minD.setDate(minD.getDate() - 7); maxD = new Date(); maxD.setDate(maxD.getDate() + 30); }
+  else { minD = new Date(Math.min(...dates)); maxD = new Date(Math.max(...dates)); minD.setDate(minD.getDate() - 3); maxD.setDate(maxD.getDate() + 3); }
   minD.setHours(0,0,0,0); maxD.setHours(0,0,0,0);
   const totalDays = Math.max(1, Math.ceil((maxD - minD) / 86400000) + 1);
-  const dayWidth = 28; // must match --day-width
-  const canvasWidth = totalDays * dayWidth;
-
-  // LEFT: task list
-  const leftBody = document.getElementById('ganttLeftBody');
-  leftBody.innerHTML = '';
+  const dayWidth = 28; const canvasWidth = totalDays * dayWidth;
+  const leftBody = document.getElementById('ganttLeftBody'); leftBody.innerHTML = '';
   for (const r of rows) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td');
+    const tr = document.createElement('tr'); const td = document.createElement('td');
     const wrap = document.createElement('div'); wrap.className = 'name-cell';
-    const depth = depthOf(r);
-    const indent = document.createElement('span'); indent.className = 'indent'; indent.style.width = (depth * 18) + 'px'; wrap.appendChild(indent);
+    const indent = document.createElement('span'); indent.className='indent'; indent.style.width = (depthOf(r)*18)+'px'; wrap.appendChild(indent);
     const chev = document.createElement('span'); chev.className = 'chevron';
     const hasChildren = state.rows.some(x => x.parentId === r.id);
     if (hasChildren) { chev.textContent = r.expanded ? '▾' : '▸'; chev.addEventListener('click', () => { r.expanded = !r.expanded; render(); }); }
     else { chev.classList.add('placeholder'); chev.textContent = '·'; }
     wrap.appendChild(chev);
-    const name = document.createElement('span');
-    name.textContent = r.values?.col_name || 'Untitled';
-    name.style.flex = '1'; name.style.overflow = 'hidden'; name.style.textOverflow = 'ellipsis'; name.style.whiteSpace = 'nowrap';
-    name.style.padding = '0 6px';
-    wrap.appendChild(name);
-    td.appendChild(wrap);
-    tr.appendChild(td);
-    leftBody.appendChild(tr);
+    const name = document.createElement('span'); name.textContent = r.values?.col_name || 'Untitled';
+    name.style.flex='1'; name.style.overflow='hidden'; name.style.textOverflow='ellipsis'; name.style.whiteSpace='nowrap'; name.style.padding='0 6px';
+    wrap.appendChild(name); td.appendChild(wrap); tr.appendChild(td); leftBody.appendChild(tr);
   }
-
-  // RIGHT: header + bars
-  const canvas = document.getElementById('ganttCanvas');
-  canvas.style.width = canvasWidth + 'px';
-  const header = document.getElementById('ganttHeader');
-  header.innerHTML = '';
-  // Month groups
+  const canvas = document.getElementById('ganttCanvas'); canvas.style.width = canvasWidth + 'px';
+  const header = document.getElementById('ganttHeader'); header.innerHTML = '';
   const months = [];
   for (let i = 0; i < totalDays; i++) {
     const d = new Date(minD); d.setDate(minD.getDate() + i);
     const key = d.getFullYear() + '-' + d.getMonth();
     const last = months[months.length - 1];
-    if (last && last.key === key) last.span++;
-    else months.push({ key, label: d.toLocaleString(undefined, { month: 'long', year: 'numeric' }), span: 1 });
+    if (last && last.key === key) last.span++; else months.push({ key, label: d.toLocaleString(undefined, { month: 'long', year: 'numeric' }), span: 1 });
   }
-  const monthRow = document.createElement('div');
-  monthRow.style.display = 'flex';
-  monthRow.style.height = '18px';
-  for (const m of months) {
-    const el = document.createElement('div');
-    el.className = 'gantt-month';
-    el.style.width = (m.span * dayWidth) + 'px';
-    el.style.lineHeight = '18px';
-    el.style.padding = '0 6px';
-    el.style.fontSize = '11px';
-    el.textContent = m.label;
-    monthRow.appendChild(el);
-  }
+  const monthRow = document.createElement('div'); monthRow.style.display='flex'; monthRow.style.height='18px';
+  for (const m of months) { const el = document.createElement('div'); el.className='gantt-month'; el.style.width=(m.span*dayWidth)+'px'; el.style.lineHeight='18px'; el.style.padding='0 6px'; el.style.fontSize='11px'; el.textContent = m.label; monthRow.appendChild(el); }
   header.appendChild(monthRow);
-  // Day row
-  const dayRow = document.createElement('div');
-  dayRow.className = 'gantt-day-row';
-  dayRow.style.position = 'static';
-  dayRow.style.top = '';
+  const dayRow = document.createElement('div'); dayRow.className='gantt-day-row'; dayRow.style.position='static';
   const todayStr = new Date().toISOString().slice(0,10);
   for (let i = 0; i < totalDays; i++) {
-    const d = new Date(minD); d.setDate(minD.getDate() + i);
-    const cell = document.createElement('div');
-    cell.className = 'gantt-day-cell';
-    if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
+    const d = new Date(minD); d.setDate(minD.getDate()+i);
+    const cell = document.createElement('div'); cell.className='gantt-day-cell';
+    if (d.getDay()===0 || d.getDay()===6) cell.classList.add('weekend');
     if (d.toISOString().slice(0,10) === todayStr) cell.classList.add('today');
-    cell.textContent = d.getDate();
-    dayRow.appendChild(cell);
+    cell.textContent = d.getDate(); dayRow.appendChild(cell);
   }
   header.appendChild(dayRow);
-
-  // Rows
-  const rowsEl = document.getElementById('ganttRows');
-  rowsEl.innerHTML = '';
-  rowsEl.style.width = canvasWidth + 'px';
+  const rowsEl = document.getElementById('ganttRows'); rowsEl.innerHTML = ''; rowsEl.style.width = canvasWidth + 'px';
   for (const r of rows) {
-    const rowEl = document.createElement('div');
-    rowEl.className = 'gantt-row';
-    // Weekend stripes
+    const rowEl = document.createElement('div'); rowEl.className='gantt-row';
     for (let i = 0; i < totalDays; i++) {
-      const d = new Date(minD); d.setDate(minD.getDate() + i);
-      if (d.getDay() === 0 || d.getDay() === 6) {
-        const stripe = document.createElement('div');
-        stripe.style.position = 'absolute';
-        stripe.style.left = (i * dayWidth) + 'px';
-        stripe.style.top = '0'; stripe.style.bottom = '0';
-        stripe.style.width = dayWidth + 'px';
-        stripe.style.background = 'rgba(0,0,0,0.025)';
-        stripe.style.pointerEvents = 'none';
-        rowEl.appendChild(stripe);
-      }
+      const d = new Date(minD); d.setDate(minD.getDate()+i);
+      if (d.getDay()===0 || d.getDay()===6) { const s = document.createElement('div'); s.style.position='absolute'; s.style.left=(i*dayWidth)+'px'; s.style.top='0'; s.style.bottom='0'; s.style.width=dayWidth+'px'; s.style.background='rgba(0,0,0,0.025)'; s.style.pointerEvents='none'; rowEl.appendChild(s); }
     }
-    // Bar
-    const s = r.values?.col_start, e = r.values?.col_end;
+    const s=r.values?.col_start, e=r.values?.col_end;
     if (s && e) {
-      const sd = new Date(s); sd.setHours(0,0,0,0);
-      const ed = new Date(e); ed.setHours(0,0,0,0);
-      const offset = Math.round((sd - minD) / 86400000);
-      const len = Math.max(1, Math.round((ed - sd) / 86400000) + 1);
-      const bar = document.createElement('div');
-      bar.className = 'gantt-bar';
+      const sd = new Date(s); sd.setHours(0,0,0,0); const ed = new Date(e); ed.setHours(0,0,0,0);
+      const offset = Math.round((sd-minD)/86400000); const len = Math.max(1, Math.round((ed-sd)/86400000)+1);
+      const bar = document.createElement('div'); bar.className='gantt-bar';
       if (state.rows.some(x => x.parentId === r.id)) bar.classList.add('parent');
-      bar.style.left = (offset * dayWidth) + 'px';
-      bar.style.width = (len * dayWidth - 2) + 'px';
-      bar.title = `${r.values?.col_name || ''}  (${s} → ${e})`;
-      bar.textContent = r.values?.col_name || '';
-      const pct = clamp(+(r.values?.col_progress || 0), 0, 100);
-      if (pct > 0 && !bar.classList.contains('parent')) {
-        const prog = document.createElement('div'); prog.className = 'gantt-progress';
-        prog.style.width = pct + '%';
-        bar.appendChild(prog);
-      }
+      bar.style.left = (offset*dayWidth)+'px'; bar.style.width = (len*dayWidth-2)+'px';
+      bar.title = `${r.values?.col_name||''}  (${s} → ${e})`; bar.textContent = r.values?.col_name||'';
+      const pct = clamp(+(r.values?.col_progress||0),0,100);
+      if (pct > 0 && !bar.classList.contains('parent')) { const prog = document.createElement('div'); prog.className='gantt-progress'; prog.style.width = pct+'%'; bar.appendChild(prog); }
       rowEl.appendChild(bar);
     }
     rowsEl.appendChild(rowEl);
   }
-  // Today line
   const todayD = new Date(); todayD.setHours(0,0,0,0);
   if (todayD >= minD && todayD <= maxD) {
-    const offset = Math.round((todayD - minD) / 86400000);
-    const line = document.createElement('div');
-    line.className = 'gantt-today-line';
-    line.style.left = (offset * dayWidth + dayWidth/2) + 'px';
-    line.style.height = rowsEl.offsetHeight + 'px';
+    const offset = Math.round((todayD-minD)/86400000);
+    const line = document.createElement('div'); line.className='gantt-today-line'; line.style.left = (offset*dayWidth+dayWidth/2)+'px'; line.style.height = rowsEl.offsetHeight + 'px';
     rowsEl.appendChild(line);
   }
 }
 
-/* ============================================================
-   WIRE UP TOOLBAR
-   ============================================================ */
 document.getElementById('btnViewTable').addEventListener('click', () => { state.ui.view = 'table'; render(); });
 document.getElementById('btnViewGantt').addEventListener('click', () => { state.ui.view = 'gantt'; render(); });
 document.getElementById('btnAddRow').addEventListener('click', () => addRow(null));
@@ -1184,7 +682,6 @@ document.getElementById('btnImport').addEventListener('click', () => document.ge
 document.getElementById('fileImport').addEventListener('change', (e) => { if (e.target.files[0]) importJson(e.target.files[0]); e.target.value = ''; });
 document.getElementById('searchInput').addEventListener('input', (e) => { state.ui.search = e.target.value; render(); });
 
-// Initial render
 updateStatus();
 render();
 </script>
