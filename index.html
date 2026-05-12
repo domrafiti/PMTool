@@ -158,6 +158,25 @@
 </div>
 <input type="file" id="fileImport" accept="application/json" style="display:none">
 <script>
+/* ============================================================
+   SHARED DEPLOYMENT CONFIG  (edit these two lines before deploying)
+   ------------------------------------------------------------
+   Fill in to make the tool auto-load data for visitors who don't
+   have JSONBin credentials of their own. Leave empty to require
+   per-visitor setup (default).
+
+   How to get values:
+   1. Create your bin (you already did).
+   2. JSONBin → Access Keys → "Create Access Key".
+      - Scope: Bin → select your bin
+      - Permissions: READ only (uncheck Update / Delete / Create)
+      - Name: "PM Tool Read-Only"
+      - Copy the resulting key.
+   3. Paste below.
+   ============================================================ */
+const EMBEDDED_BIN_ID  = '6a03824ec0954111d813b079';   // 24-char hex from your bin URL
+const EMBEDDED_READ_KEY = '$2a$10$6GrfNnloKC8SRUQraA0TQ.NcpJe46gZvQcOjj57JysAJ5W8jJ/KhG';  // JSONBin read-only Access Key ($2a$10$…)
+
 const uid = () => 'i_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 const DEFAULT_STATE = () => ({
   version: 3,
@@ -635,7 +654,12 @@ async function testConnection() {
 
 async function syncNow() {
   if (!state.settings.jsonbinApiKey || !state.settings.jsonbinBinId) {
-    alert('Configure Settings first.'); openSettings(); return;
+    if (EMBEDDED_BIN_ID && EMBEDDED_READ_KEY) {
+      alert('You are in viewer mode (read-only).\n\nTo make edits that save remotely, configure your own JSONBin Master Key in Settings — that grants you admin permissions.');
+    } else {
+      alert('Configure Settings first.'); openSettings();
+    }
+    return;
   }
   setStatus('Syncing…');
   try {
@@ -677,8 +701,42 @@ function importJson(file) {
 }
 function setStatus(t, k) { const el = document.getElementById('status'); el.textContent = t; el.className = 'status' + (k ? ' ' + k : ''); }
 function updateStatus() {
-  if (!state.settings.jsonbinApiKey || !state.settings.jsonbinBinId) { setStatus('Setup needed — click Settings'); return; }
-  setStatus('Configured · click Test or Sync', 'ok');
+  const hasOwnKey = state.settings.jsonbinApiKey && state.settings.jsonbinBinId;
+  const hasEmbedded = EMBEDDED_BIN_ID && EMBEDDED_READ_KEY;
+  if (hasOwnKey) { setStatus('Admin · can edit & sync', 'ok'); return; }
+  if (hasEmbedded) { setStatus('Viewer mode · read-only', 'ok'); return; }
+  setStatus('Setup needed — click Settings');
+}
+
+async function autoLoadFromEmbeddedBin() {
+  if (!EMBEDDED_BIN_ID || !EMBEDDED_READ_KEY) return;
+  // Skip auto-load if user has their own master key — admins manage sync direction manually
+  if (state.settings.jsonbinApiKey && state.settings.jsonbinBinId) return;
+  try {
+    setStatus('Loading shared data…');
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + EMBEDDED_BIN_ID + '/latest', {
+      headers: { 'X-Access-Key': EMBEDDED_READ_KEY }
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let err = null; try { err = JSON.parse(text); } catch {}
+      throw new Error(err?.message || ('HTTP ' + res.status + ': ' + text.slice(0, 200)));
+    }
+    const data = JSON.parse(text);
+    if (!data.record || !data.record.columns || !data.record.rows) {
+      throw new Error('Shared bin does not contain valid PM Tool data');
+    }
+    // Preserve local UI state (view mode, filters, search) across auto-load
+    const localUi = { ...state.ui };
+    state = data.record;
+    state.ui = localUi;
+    saveLocal();
+    render();
+    setStatus('Viewer · loaded ' + data.record.rows.length + ' rows · ' + new Date().toLocaleTimeString(), 'ok');
+  } catch (e) {
+    setStatus('Could not load shared data: ' + e.message, 'err');
+    console.error('autoLoadFromEmbeddedBin failed', e);
+  }
 }
 
 function renderGantt() {
@@ -771,6 +829,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => { state.
 
 updateStatus();
 render();
+autoLoadFromEmbeddedBin();
 </script>
 </body>
 </html>
