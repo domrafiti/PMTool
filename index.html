@@ -39,7 +39,7 @@
   table.grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
   table.grid th, table.grid td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0; height: var(--row-height); vertical-align: middle; background: var(--bg); position: relative; }
   table.grid thead th { position: sticky; top: 0; z-index: 5; background: var(--bg-alt); height: var(--header-height); font-weight: 600; color: var(--text); text-align: left; user-select: none; }
-  table.grid thead th .th-inner { display: flex; align-items: center; padding: 0 8px; gap: 4px; height: 100%; cursor: default; }
+  table.grid thead th .th-inner { display: flex; align-items: center; padding: 0 12px; gap: 4px; height: 100%; cursor: default; }
   table.grid thead th .grip { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; }
   table.grid thead th .grip:hover { background: var(--accent-soft); }
   table.grid thead th .menu-btn { margin-left: auto; opacity: 0; padding: 2px 4px; border: 1px solid transparent; border-radius: 4px; background: transparent; }
@@ -47,9 +47,46 @@
   table.grid thead th .menu-btn:hover { background: var(--bg); border-color: var(--border); }
   table.grid thead th.group-header { text-align: center; background: var(--bg); border-bottom: 1px solid var(--border-strong); font-weight: 600; }
   table.grid thead th.group-header .th-inner { justify-content: center; cursor: pointer; }
-  table.grid tbody td .cell { padding: 0 8px; height: 100%; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  table.grid tbody td .cell input, table.grid tbody td .cell select { width: 100%; height: 100%; border: none; background: transparent; padding: 0; }
-  table.grid tbody td .cell input:focus, table.grid tbody td .cell select:focus { background: var(--bg); }
+  table.grid tbody td { height: auto; min-height: var(--row-height); vertical-align: top; }
+  table.grid tbody td .cell { padding: 0 12px; min-height: var(--row-height); display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  table.grid tbody td .cell input, table.grid tbody td .cell select, table.grid tbody td .cell textarea { width: 100%; height: 100%; border: none; background: transparent; padding: 0; font: inherit; color: inherit; resize: none; }
+  table.grid tbody td .cell input:focus, table.grid tbody td .cell select:focus, table.grid tbody td .cell textarea:focus { background: var(--bg); }
+  /* Wrap-cells (Name, Owner): allow content to wrap and row to grow */
+  table.grid tbody td.wrap-cell .cell { align-items: flex-start; padding: 4px 12px; white-space: normal; }
+  table.grid tbody td.wrap-cell .cell textarea { white-space: pre-wrap; word-break: break-word; line-height: 1.4; min-height: 22px; height: auto; overflow: hidden; }
+  /* Notes-cell: collapsed by default (single line), expands as floating overlay on focus */
+  table.grid tbody td.notes-cell .cell { padding: 0 8px; }
+  .notes-textarea { width: 100%; height: 24px; min-height: 24px; resize: none; border: none; background: transparent; padding: 2px 4px; line-height: 1.4; outline: none; overflow: hidden; font: inherit; color: inherit; }
+  .notes-textarea:focus {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    min-height: 90px; height: auto;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 6px 8px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    overflow: auto;
+    white-space: pre-wrap;
+  }
+  /* Parent-row styling by depth — RAG-safe (cool tones + grayscale, avoids red/amber/green) */
+  table.grid tbody tr.parent-d0 td { background: #dbeafe; }
+  table.grid tbody tr.parent-d0:hover td { background: #bfdbfe; }
+  table.grid tbody tr.parent-d0 .name-input { font-weight: 700; color: #1e3a8a; }
+  table.grid tbody tr.parent-d1 td { background: #e2e8f0; }
+  table.grid tbody tr.parent-d1:hover td { background: #cbd5e1; }
+  table.grid tbody tr.parent-d1 .name-input { font-weight: 600; color: #1e293b; }
+  table.grid tbody tr.parent-d2 td { background: #f1f5f9; }
+  table.grid tbody tr.parent-d2:hover td { background: #e2e8f0; }
+  table.grid tbody tr.parent-d2 .name-input { font-weight: 500; color: #334155; }
+  /* Same scheme for the Gantt left panel */
+  .gantt-left tr.parent-d0 td { background: #dbeafe; }
+  .gantt-left tr.parent-d0 td span:not(.indent):not(.chevron) { font-weight: 700; color: #1e3a8a; }
+  .gantt-left tr.parent-d1 td { background: #e2e8f0; }
+  .gantt-left tr.parent-d1 td span:not(.indent):not(.chevron) { font-weight: 600; color: #1e293b; }
+  .gantt-left tr.parent-d2 td { background: #f1f5f9; }
+  .gantt-left tr.parent-d2 td span:not(.indent):not(.chevron) { font-weight: 500; color: #334155; }
   table.grid tbody tr:hover td { background: var(--bg-hover); }
   .name-cell { display: flex; align-items: center; gap: 2px; padding: 0 4px 0 0; height: 100%; }
   .name-cell .indent { flex-shrink: 0; }
@@ -404,6 +441,11 @@ function applySort(rows){
 }
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function autoGrowTextarea(ta) {
+  if (!ta) return;
+  ta.style.height = 'auto';
+  ta.style.height = Math.max(22, ta.scrollHeight) + 'px';
+}
 function isBlocked(row) {
   const deps = row.values?.col_deps || [];
   if (!deps.length) return false;
@@ -487,11 +529,16 @@ function renderTable() {
   }
   for (const row of rows) {
     const tr = document.createElement('tr'); tr.dataset.rowId = row.id;
+    const _d = depthOf(row);
+    const _hasKids = state.rows.some(r => r.parentId === row.id);
+    if (_hasKids && _d < 3) tr.classList.add('parent-d' + _d);
     attachRowDrop(tr, row);
     for (const rc of renderCols) {
       if (rc.kind === 'group-collapsed') { const td = document.createElement('td'); td.className = 'group-collapsed-cell'; td.addEventListener('click', () => toggleGroup(rc.group)); tr.appendChild(td); continue; }
       const col = rc.col; const td = document.createElement('td');
       td.style.width = (col.width || 120) + 'px'; td.style.minWidth = (col.width || 120) + 'px';
+      if (col.id === 'col_name' || col.id === 'col_owner') td.classList.add('wrap-cell');
+      if (col.id === 'col_notes') td.classList.add('notes-cell');
       td.appendChild(renderCell(row, col)); tr.appendChild(td);
     }
     tbody.appendChild(tr);
@@ -507,8 +554,11 @@ function renderCell(row, col) {
     if (hasChildren) { chev.textContent = row.expanded ? '▾' : '▸'; chev.addEventListener('click', () => { row.expanded = !row.expanded; render(); }); }
     else { chev.classList.add('placeholder'); chev.textContent = '·'; }
     wrap.appendChild(chev);
-    const inp = document.createElement('input'); inp.className = 'name-input'; inp.type = 'text'; inp.value = row.values?.col_name || ''; inp.placeholder = 'Untitled';
-    inp.addEventListener('change', () => { row.values.col_name = inp.value; saveLocal(); });
+    const inp = document.createElement('textarea'); inp.className = 'name-input'; inp.rows = 1; inp.value = row.values?.col_name || ''; inp.placeholder = 'Untitled';
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); inp.blur(); } });
+    inp.addEventListener('input', () => autoGrowTextarea(inp));
+    inp.addEventListener('change', () => { row.values.col_name = inp.value.replace(/\n/g, ' '); saveLocal(); });
+    requestAnimationFrame(() => autoGrowTextarea(inp));
     wrap.appendChild(inp);
     const actions = document.createElement('div'); actions.className = 'row-actions';
     const a1 = document.createElement('button'); a1.textContent = '+ child'; a1.title = 'Add child row'; a1.addEventListener('click', () => addRow(row.id));
@@ -550,6 +600,21 @@ function renderCell(row, col) {
     const inp = document.createElement('input'); inp.type = 'number'; inp.value = row.values?.[col.id] ?? '';
     inp.addEventListener('change', () => { row.values[col.id] = inp.value === '' ? '' : +inp.value; saveLocal(); });
     wrap.appendChild(inp); return wrap;
+  }
+  if (col.id === 'col_owner') {
+    const wrap = document.createElement('div'); wrap.className = 'cell';
+    const ta = document.createElement('textarea'); ta.rows = 1; ta.value = row.values?.col_owner || '';
+    ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ta.blur(); } });
+    ta.addEventListener('input', () => autoGrowTextarea(ta));
+    ta.addEventListener('change', () => { row.values.col_owner = ta.value.replace(/\n/g, ' '); saveLocal(); });
+    requestAnimationFrame(() => autoGrowTextarea(ta));
+    wrap.appendChild(ta); return wrap;
+  }
+  if (col.id === 'col_notes') {
+    const wrap = document.createElement('div'); wrap.className = 'cell';
+    const ta = document.createElement('textarea'); ta.className = 'notes-textarea'; ta.value = row.values?.col_notes || ''; ta.placeholder = 'Notes…';
+    ta.addEventListener('change', () => { row.values.col_notes = ta.value; saveLocal(); });
+    wrap.appendChild(ta); return wrap;
   }
   if (col.type === 'deps') {
     const wrap = document.createElement('div'); wrap.className = 'cell';
@@ -963,7 +1028,11 @@ function renderGantt() {
   const dayWidth = 28; const canvasWidth = totalDays * dayWidth;
   const leftBody = document.getElementById('ganttLeftBody'); leftBody.innerHTML = '';
   for (const r of rows) {
-    const tr = document.createElement('tr'); const td = document.createElement('td');
+    const tr = document.createElement('tr');
+    const _d = depthOf(r);
+    const _hasKids = state.rows.some(x => x.parentId === r.id);
+    if (_hasKids && _d < 3) tr.classList.add('parent-d' + _d);
+    const td = document.createElement('td');
     const wrap = document.createElement('div'); wrap.className = 'name-cell';
     const indent = document.createElement('span'); indent.className='indent'; indent.style.width = (depthOf(r)*18)+'px'; wrap.appendChild(indent);
     const chev = document.createElement('span'); chev.className = 'chevron';
