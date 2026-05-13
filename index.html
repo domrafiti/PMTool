@@ -39,8 +39,7 @@
   table.grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
   table.grid th, table.grid td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0; height: var(--row-height); vertical-align: middle; background: var(--bg); position: relative; }
   table.grid thead th { position: sticky; top: 0; z-index: 5; background: var(--bg-alt); height: var(--header-height); font-weight: 600; color: var(--text); text-align: left; user-select: none; }
-  table.grid thead th .th-inner { display: flex; align-items: center; padding: 0 8px; gap: 4px; height: 100%; cursor: pointer; }
-  table.grid thead th .th-inner:hover { background: var(--bg-hover); }
+  table.grid thead th .th-inner { display: flex; align-items: center; padding: 0 8px; gap: 4px; height: 100%; cursor: default; }
   table.grid thead th .grip { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; }
   table.grid thead th .grip:hover { background: var(--accent-soft); }
   table.grid thead th .menu-btn { margin-left: auto; opacity: 0; padding: 2px 4px; border: 1px solid transparent; border-radius: 4px; background: transparent; }
@@ -213,7 +212,78 @@ let state = (function(){
   s.rows.push(sampleRow(p2.id, true, { col_name: 'Implement API', col_status: 'In Progress', col_owner: 'You', col_start: today(12), col_end: today(18), col_progress: 50 }));
   return s;
 })();
-function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function saveLocal(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}
+  if (!suppressDirtyTracking) markChanged();
+}
+
+/* ============================================================
+   AUTO-SYNC  (5-minute timer after first change since last sync)
+   ============================================================ */
+const AUTO_SYNC_DELAY_MS = 5 * 60 * 1000;
+let unsavedChanges = false;
+let pendingSyncTimer = null;
+let pendingSyncDeadline = null;
+let countdownInterval = null;
+let suppressDirtyTracking = false;
+
+function isAdminMode() {
+  return !!(state.settings.jsonbinApiKey && state.settings.jsonbinBinId);
+}
+function updateDocTitle() {
+  try { document.title = (unsavedChanges ? '● ' : '') + 'PM Tool'; } catch (e) {}
+}
+function markChanged() {
+  if (!isAdminMode()) return;
+  unsavedChanges = true;
+  updateDocTitle();
+  if (pendingSyncTimer) return; // 5-min window already running
+  pendingSyncDeadline = Date.now() + AUTO_SYNC_DELAY_MS;
+  pendingSyncTimer = setTimeout(performAutoSync, AUTO_SYNC_DELAY_MS);
+  startCountdown();
+  updateCountdownStatus();
+}
+function markSynced() {
+  unsavedChanges = false;
+  if (pendingSyncTimer) { clearTimeout(pendingSyncTimer); pendingSyncTimer = null; }
+  pendingSyncDeadline = null;
+  stopCountdown();
+  updateDocTitle();
+}
+function startCountdown() {
+  stopCountdown();
+  countdownInterval = setInterval(updateCountdownStatus, 10000);
+}
+function stopCountdown() {
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+}
+function updateCountdownStatus() {
+  if (!pendingSyncDeadline) return;
+  const remaining = Math.max(0, pendingSyncDeadline - Date.now());
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  setStatus('● Unsaved · auto-save in ' + mins + ':' + secs.toString().padStart(2,'0'));
+}
+async function performAutoSync() {
+  pendingSyncTimer = null;
+  pendingSyncDeadline = null;
+  stopCountdown();
+  if (!isAdminMode()) { unsavedChanges = false; updateDocTitle(); return; }
+  try {
+    setStatus('Auto-saving…');
+    const json = JSON.stringify(state);
+    if (json.length > 49500) {
+      setStatus('Auto-save skipped — data exceeds ~50KB bin limit · click Sync to handle manually', 'err');
+      return;
+    }
+    await jsonbinApi('PUT', state);
+    markSynced();
+    setStatus('Auto-saved ' + json.length + ' bytes · ' + new Date().toLocaleTimeString(), 'ok');
+  } catch (e) {
+    setStatus('Auto-save failed: ' + e.message + ' (will retry on next change)', 'err');
+    // Timer cleared above; next mutation reschedules
+  }
+}
 
 function depthOf(r){let d=0,c=r;while(c&&c.parentId){c=state.rows.find(x=>x.id===c.parentId);d++;if(d>100)break;}return d;}
 function descendantsOf(id){const o=[],s=[id];while(s.length){const c=s.pop();for(const r of state.rows)if(r.parentId===c){o.push(r);s.push(r.id);}}return o;}
@@ -401,8 +471,7 @@ function renderTable() {
     const inner = document.createElement('div'); inner.className = 'th-inner';
     const si = (state.ui.sortBy && state.ui.sortBy.columnId === col.id) ? (state.ui.sortBy.direction === 'asc' ? ' ▲' : ' ▼') : '';
     inner.innerHTML = `<span>${escapeHtml(col.label)}</span><span style="color:var(--text-muted);font-size:11px">${si}</span>`;
-    inner.addEventListener('click', (e) => { if (e.target.closest('.menu-btn')) return; cycleSort(col.id); });
-    const mb = document.createElement('button'); mb.className = 'menu-btn'; mb.innerHTML = '⋮'; mb.title = 'Column options';
+    const mb = document.createElement('button'); mb.className = 'menu-btn'; mb.innerHTML = '⋮'; mb.title = 'Column options (sort, rename, hide, etc.)';
     mb.addEventListener('click', (e) => { e.stopPropagation(); showColumnMenu(mb, col); });
     inner.appendChild(mb); th.appendChild(inner);
     const grip = document.createElement('div'); grip.className = 'grip'; attachColumnResize(grip, col); th.appendChild(grip);
@@ -773,6 +842,7 @@ async function syncNow() {
     if (choice) {
       const json = JSON.stringify(state);
       await jsonbinApi('PUT', state);
+      markSynced();
       setStatus(`Pushed ${json.length} bytes · ${new Date().toLocaleTimeString()}`, 'ok');
     } else {
       const result = await jsonbinApi('GET');
@@ -781,7 +851,10 @@ async function syncNow() {
         if (!confirm('Bin is empty or not a valid PM Tool snapshot. Push local data to it now?')) { setStatus('Pull cancelled'); return; }
         return syncNow();
       }
-      state = remote; saveLocal(); render();
+      suppressDirtyTracking = true;
+      try { state = remote; saveLocal(); render(); }
+      finally { suppressDirtyTracking = false; }
+      markSynced();
       setStatus('Pulled from bin · ' + new Date().toLocaleTimeString(), 'ok');
     }
   } catch (e) {
@@ -824,10 +897,14 @@ async function refreshFromBin() {
       if (!remote || !remote.columns || !remote.rows) throw new Error('Bin content is not a valid PM Tool snapshot.');
       const localUi = { ...state.ui };
       const localSettings = { ...state.settings };
-      state = remote;
-      state.ui = localUi;
-      state.settings = localSettings;
-      saveLocal(); render();
+      suppressDirtyTracking = true;
+      try {
+        state = remote;
+        state.ui = localUi;
+        state.settings = localSettings;
+        saveLocal(); render();
+      } finally { suppressDirtyTracking = false; }
+      markSynced();
       setStatus('Refreshed from bin · ' + new Date().toLocaleTimeString(), 'ok');
     } catch (e) {
       setStatus('Refresh failed: ' + e.message, 'err');
@@ -860,10 +937,13 @@ async function autoLoadFromEmbeddedBin() {
     }
     // Preserve local UI state (view mode, filters, search) across auto-load
     const localUi = { ...state.ui };
-    state = data.record;
-    state.ui = localUi;
-    saveLocal();
-    render();
+    suppressDirtyTracking = true;
+    try {
+      state = data.record;
+      state.ui = localUi;
+      saveLocal();
+      render();
+    } finally { suppressDirtyTracking = false; }
     setStatus('Viewer · loaded ' + data.record.rows.length + ' rows · ' + new Date().toLocaleTimeString(), 'ok');
   } catch (e) {
     setStatus('Could not load shared data: ' + e.message, 'err');
