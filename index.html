@@ -93,7 +93,7 @@
   .name-cell .chevron { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); border-radius: 3px; flex-shrink: 0; }
   .name-cell .chevron:hover { background: var(--bg-hover); }
   .name-cell .chevron.placeholder { visibility: hidden; }
-  .name-cell .name-input { flex: 1; border: none; background: transparent; padding: 4px 4px; min-width: 0; }
+  .name-cell .name-input { flex: 1; border: none; background: transparent; padding: 4px 4px; min-width: 0; font: inherit; color: inherit; resize: none; line-height: 1.4; }
   .name-cell .name-input:focus { background: var(--bg); outline: 1px solid var(--accent); border-radius: 3px; }
   .row-actions { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: none; gap: 2px; }
   tr:hover .row-actions { display: flex; }
@@ -212,7 +212,7 @@
    3. Paste below.
    ============================================================ */
 const EMBEDDED_BIN_ID  = '6a03824ec0954111d813b079';   // 24-char hex from your bin URL
-const EMBEDDED_READ_KEY = '$2a$10$6GrfNnloKC8SRUQraA0TQ.NcpJe46gZvQcOjj57JysAJ5W8jJ/KhG';  // JSONBin read-only Access Key ($2a$10$…)
+const EMBEDDED_READ_KEY = '$2a$10$6GrfNnloKC8SRUQraA0TQ.NcpJe46gZvQcOjj57JysAJ5W8jJ/KhG';
 
 const uid = () => 'i_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 const DEFAULT_STATE = () => ({
