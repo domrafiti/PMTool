@@ -120,6 +120,11 @@
   .gantt-bar.parent { background: var(--text); height: 8px; top: 12px; border-radius: 2px; }
   .gantt-bar .gantt-progress { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,0.3); border-radius: 4px 0 0 4px; }
   .gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); pointer-events: none; z-index: 1; }
+  /* Milestone diamonds: rendered for rows that have only one date set, or where start == end */
+  .gantt-milestone { position: absolute; width: 14px; height: 14px; top: calc((var(--row-height) - 14px) / 2); background: var(--accent); transform: rotate(45deg); z-index: 2; box-shadow: 0 1px 2px rgba(0,0,0,0.2); cursor: pointer; }
+  .gantt-milestone.completion { background: #475569; }
+  .gantt-milestone.start { background: var(--accent); }
+  .gantt-milestone.milestone { background: var(--bar); }
   .menu { position: absolute; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 1000; min-width: 200px; padding: 4px; }
   .menu button { display: block; width: 100%; text-align: left; background: transparent; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
   .menu button:hover { background: var(--bg-hover); }
@@ -446,6 +451,31 @@ function autoGrowTextarea(ta) {
   ta.style.height = 'auto';
   ta.style.height = Math.max(22, ta.scrollHeight) + 'px';
 }
+function getRolledUpValue(row, colId) {
+  const descendants = descendantsOf(row.id);
+  if (descendants.length === 0) return null;
+  const values = descendants
+    .map(r => r.values?.[colId])
+    .filter(v => v != null && v !== '');
+  if (values.length === 0) return null;
+  if (colId === 'col_start') return values.reduce((min, v) => (v < min ? v : min));
+  if (colId === 'col_end')   return values.reduce((max, v) => (v > max ? v : max));
+  if (colId === 'col_progress') {
+    const nums = values.map(Number).filter(n => !isNaN(n));
+    if (!nums.length) return null;
+    return Math.round(nums.reduce((a,b) => a+b, 0) / nums.length);
+  }
+  return null;
+}
+function getEffectiveValue(row, colId) {
+  const hasChildren = state.rows.some(r => r.parentId === row.id);
+  if (!hasChildren) return row.values?.[colId];
+  if (colId === 'col_start' || colId === 'col_end' || colId === 'col_progress') {
+    const rolled = getRolledUpValue(row, colId);
+    if (rolled !== null && rolled !== undefined) return rolled;
+  }
+  return row.values?.[colId];
+}
 function isBlocked(row) {
   const deps = row.values?.col_deps || [];
   if (!deps.length) return false;
@@ -584,6 +614,19 @@ function renderCell(row, col) {
   }
   if (col.type === 'date') {
     const wrap = document.createElement('div'); wrap.className = 'cell';
+    const hasChildren = state.rows.some(r => r.parentId === row.id);
+    const isRollupCol = col.id === 'col_start' || col.id === 'col_end';
+    if (hasChildren && isRollupCol) {
+      const rolled = getRolledUpValue(row, col.id);
+      if (rolled) {
+        const span = document.createElement('span');
+        span.textContent = rolled;
+        span.style.color = 'var(--text-muted)';
+        span.style.fontStyle = 'italic';
+        span.title = 'Rolled up from children · ' + (col.id === 'col_start' ? 'earliest start' : 'latest end');
+        wrap.appendChild(span); return wrap;
+      }
+    }
     const inp = document.createElement('input'); inp.type = 'date'; inp.value = row.values?.[col.id] || '';
     inp.addEventListener('change', () => { row.values[col.id] = inp.value; saveLocal(); if (state.ui.view === 'gantt') render(); });
     wrap.appendChild(inp); return wrap;
@@ -591,11 +634,29 @@ function renderCell(row, col) {
   if (col.type === 'number') {
     const wrap = document.createElement('div'); wrap.className = 'cell';
     if (col.id === 'col_progress') {
+      const hasChildren = state.rows.some(r => r.parentId === row.id);
+      let v; let isRollup = false;
+      if (hasChildren) {
+        const rolled = getRolledUpValue(row, 'col_progress');
+        if (rolled !== null && rolled !== undefined) { v = clamp(rolled, 0, 100); isRollup = true; }
+        else { v = clamp(+(row.values?.col_progress || 0), 0, 100); }
+      } else {
+        v = clamp(+(row.values?.col_progress || 0), 0, 100);
+      }
       const bar = document.createElement('div'); bar.className = 'progress-bar'; bar.style.flex = '1'; bar.style.marginRight = '6px';
-      const fill = document.createElement('div'); const v = clamp(+(row.values?.col_progress || 0), 0, 100); fill.style.width = v + '%'; bar.appendChild(fill); wrap.appendChild(bar);
-      const inp = document.createElement('input'); inp.type = 'number'; inp.min = 0; inp.max = 100; inp.style.width = '50px'; inp.value = v;
-      inp.addEventListener('change', () => { row.values.col_progress = clamp(+inp.value, 0, 100); render(); });
-      wrap.appendChild(inp); return wrap;
+      const fill = document.createElement('div'); fill.style.width = v + '%'; bar.appendChild(fill); wrap.appendChild(bar);
+      if (isRollup) {
+        const span = document.createElement('span');
+        span.textContent = v + '%';
+        span.style.fontStyle = 'italic'; span.style.color = 'var(--text-muted)'; span.style.minWidth = '40px'; span.style.textAlign = 'right';
+        span.title = 'Rolled up · average across descendants';
+        wrap.appendChild(span);
+      } else {
+        const inp = document.createElement('input'); inp.type = 'number'; inp.min = 0; inp.max = 100; inp.style.width = '50px'; inp.value = v;
+        inp.addEventListener('change', () => { row.values.col_progress = clamp(+inp.value, 0, 100); render(); });
+        wrap.appendChild(inp);
+      }
+      return wrap;
     }
     const inp = document.createElement('input'); inp.type = 'number'; inp.value = row.values?.[col.id] ?? '';
     inp.addEventListener('change', () => { row.values[col.id] = inp.value === '' ? '' : +inp.value; saveLocal(); });
@@ -1019,7 +1080,7 @@ async function autoLoadFromEmbeddedBin() {
 function renderGantt() {
   const rows = applySearchAndFilter(applySort(getVisibleRows()));
   const dates = [];
-  for (const r of rows) { const s=r.values?.col_start, e=r.values?.col_end; if (s) dates.push(new Date(s)); if (e) dates.push(new Date(e)); }
+  for (const r of rows) { const s=getEffectiveValue(r,'col_start'), e=getEffectiveValue(r,'col_end'); if (s) dates.push(new Date(s)); if (e) dates.push(new Date(e)); }
   let minD, maxD;
   if (dates.length === 0) { minD = new Date(); minD.setDate(minD.getDate() - 7); maxD = new Date(); maxD.setDate(maxD.getDate() + 30); }
   else { minD = new Date(Math.min(...dates)); maxD = new Date(Math.max(...dates)); minD.setDate(minD.getDate() - 3); maxD.setDate(maxD.getDate() + 3); }
@@ -1073,17 +1134,30 @@ function renderGantt() {
       const d = new Date(minD); d.setDate(minD.getDate()+i);
       if (d.getDay()===0 || d.getDay()===6) { const s = document.createElement('div'); s.style.position='absolute'; s.style.left=(i*dayWidth)+'px'; s.style.top='0'; s.style.bottom='0'; s.style.width=dayWidth+'px'; s.style.background='rgba(0,0,0,0.025)'; s.style.pointerEvents='none'; rowEl.appendChild(s); }
     }
-    const s=r.values?.col_start, e=r.values?.col_end;
-    if (s && e) {
+    const s = getEffectiveValue(r, 'col_start'), e = getEffectiveValue(r, 'col_end');
+    if (s && e && s !== e) {
       const sd = new Date(s); sd.setHours(0,0,0,0); const ed = new Date(e); ed.setHours(0,0,0,0);
       const offset = Math.round((sd-minD)/86400000); const len = Math.max(1, Math.round((ed-sd)/86400000)+1);
       const bar = document.createElement('div'); bar.className='gantt-bar';
       if (state.rows.some(x => x.parentId === r.id)) bar.classList.add('parent');
       bar.style.left = (offset*dayWidth)+'px'; bar.style.width = (len*dayWidth-2)+'px';
       bar.title = `${r.values?.col_name||''}  (${s} → ${e})`; bar.textContent = r.values?.col_name||'';
-      const pct = clamp(+(r.values?.col_progress||0),0,100);
+      const pct = clamp(+(getEffectiveValue(r, 'col_progress')||0),0,100);
       if (pct > 0 && !bar.classList.contains('parent')) { const prog = document.createElement('div'); prog.className='gantt-progress'; prog.style.width = pct+'%'; bar.appendChild(prog); }
       rowEl.appendChild(bar);
+    } else if (s || e) {
+      // Milestone diamond: zero-duration (s==e), completion-only (end only), or start-only
+      const dateStr = e || s;
+      const kind = (s && e && s === e) ? 'milestone' : (e && !s) ? 'completion' : 'start';
+      const d = new Date(dateStr); d.setHours(0,0,0,0);
+      const offset = Math.round((d - minD) / 86400000);
+      const xCenter = offset * dayWidth + dayWidth/2;
+      const ms = document.createElement('div');
+      ms.className = 'gantt-milestone ' + kind;
+      ms.style.left = (xCenter - 7) + 'px';
+      const label = (kind === 'completion' ? 'Completion' : kind === 'start' ? 'Start' : 'Milestone');
+      ms.title = (r.values?.col_name || '') + ' · ' + label + ': ' + dateStr;
+      rowEl.appendChild(ms);
     }
     rowsEl.appendChild(rowEl);
   }
@@ -1096,14 +1170,14 @@ function renderGantt() {
     const dep = rows[depIdx];
     const deps = dep.values?.col_deps || [];
     if (!deps.length) continue;
-    const depStart = dep.values?.col_start;
+    const depStart = getEffectiveValue(dep, 'col_start');
     if (!depStart) continue;
     for (const predId of deps) {
       const predIdx = rowIndexMap.get(predId);
       if (predIdx === undefined) continue; // predecessor not in current visible set
       const pred = state.rows.find(r => r.id === predId);
       if (!pred) continue;
-      const predEnd = pred.values?.col_end;
+      const predEnd = getEffectiveValue(pred, 'col_end');
       if (!predEnd) continue;
       const predEndD = new Date(predEnd); predEndD.setHours(0,0,0,0);
       const depStartD = new Date(depStart); depStartD.setHours(0,0,0,0);
